@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-import { mockTeams } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
 
 const TeamDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const team = mockTeams.find(t => t.id === id);
+  const team = dataService.findTeam(id || "");
 
   if (!team) {
     return (
@@ -50,8 +50,10 @@ const TeamDetails = () => {
             <CardContent>
               <div className="space-y-3">
                 {team.members.map((member, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold">{member}</h4>
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Link to={`/profile/${member.profileId}`}>
+                      <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
+                    </Link>
                   </div>
                 ))}
               </div>

@@ -3,14 +3,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-import { mockProfiles } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ProfileDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const profile = mockProfiles.find(p => p.id === id);
+  const profile = dataService.findProfile(id || "");
 
   if (!profile) {
     return (
@@ -23,11 +23,25 @@ const ProfileDetails = () => {
     );
   }
 
-  const chartData = profile.contests.map(contest => ({
-    year: contest.year,
-    position: contest.position,
-    contest: contest.contest
-  }));
+  // Group contests by year and create chart data
+  const contestsByYear = profile.contests.reduce((acc, contest) => {
+    if (!acc[contest.year]) {
+      acc[contest.year] = [];
+    }
+    acc[contest.year].push(contest);
+    return acc;
+  }, {} as Record<number, typeof profile.contests>);
+
+  const chartData = Object.entries(contestsByYear).flatMap(([year, contests]) => 
+    contests.map((contest, index) => ({
+      year: parseInt(year),
+      position: contest.position,
+      contest: contest.contest,
+      contestId: contest.contestId,
+      yearIndex: index,
+      color: `hsl(${(parseInt(year) - 2019) * 60}, 70%, 50%)`
+    }))
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -51,6 +65,27 @@ const ProfileDetails = () => {
               </CardHeader>
             </Card>
 
+            {profile.events && profile.events.length > 0 && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Events Participated</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {profile.events.map((event, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <Link to={`/event/${event.eventId}`}>
+                          <h4 className="font-semibold text-blue-600 hover:text-blue-800">
+                            {event.name}
+                          </h4>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Contest Performance</CardTitle>
@@ -71,7 +106,10 @@ const ProfileDetails = () => {
                           props.payload.contest
                         ]}
                       />
-                      <Bar dataKey="position" fill="#3b82f6" />
+                      <Bar 
+                        dataKey="position" 
+                        fill={(entry) => entry.color}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
