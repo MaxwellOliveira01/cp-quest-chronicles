@@ -1,4 +1,3 @@
-
 import { mockProfiles, mockUniversities, mockTeams, mockContests } from '@/data/mockData';
 
 export interface Event {

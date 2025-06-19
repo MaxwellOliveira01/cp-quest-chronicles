@@ -13,6 +13,9 @@ import ProfileDetails from "./pages/ProfileDetails";
 import UniversityDetails from "./pages/UniversityDetails";
 import ContestDetails from "./pages/ContestDetails";
 import TeamDetails from "./pages/TeamDetails";
+import EventDetails from "./pages/EventDetails";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +36,9 @@ const App = () => (
           <Route path="/university/:id" element={<UniversityDetails />} />
           <Route path="/contest/:id" element={<ContestDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
+          <Route path="/event/:id" element={<EventDetails />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
