@@ -1,5 +1,5 @@
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -88,7 +88,11 @@ const ProfileDetails = () => {
                 <div className="space-y-4">
                   {profile.contests.map((contest, index) => (
                     <div key={index} className="border-l-4 border-blue-500 pl-4">
-                      <h4 className="font-semibold">{contest.contest}</h4>
+                      <Link to={`/contest/${contest.contestId}`}>
+                        <h4 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
+                          {contest.contest}
+                        </h4>
+                      </Link>
                       <p className="text-sm text-gray-600">{contest.year}</p>
                       <p className="text-sm font-medium text-blue-600">
                         Position: {contest.position}
@@ -106,8 +110,12 @@ const ProfileDetails = () => {
               <CardContent>
                 <div className="space-y-3">
                   {profile.teams.map((team, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <h4 className="font-semibold">{team.name}</h4>
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Link to={`/team/${team.teamId}`}>
+                        <h4 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
+                          {team.name}
+                        </h4>
+                      </Link>
                       <p className="text-sm text-gray-600">{team.year}</p>
                     </div>
                   ))}

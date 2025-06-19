@@ -8,9 +8,11 @@ import LandingPage from "./pages/LandingPage";
 import ProfileSearch from "./pages/ProfileSearch";
 import UniversitySearch from "./pages/UniversitySearch";
 import ContestSearch from "./pages/ContestSearch";
+import TeamSearch from "./pages/TeamSearch";
 import ProfileDetails from "./pages/ProfileDetails";
 import UniversityDetails from "./pages/UniversityDetails";
 import ContestDetails from "./pages/ContestDetails";
+import TeamDetails from "./pages/TeamDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,9 +28,11 @@ const App = () => (
           <Route path="/search/profile" element={<ProfileSearch />} />
           <Route path="/search/university" element={<UniversitySearch />} />
           <Route path="/search/contest" element={<ContestSearch />} />
+          <Route path="/search/team" element={<TeamSearch />} />
           <Route path="/profile/:id" element={<ProfileDetails />} />
           <Route path="/university/:id" element={<UniversityDetails />} />
           <Route path="/contest/:id" element={<ContestDetails />} />
+          <Route path="/team/:id" element={<TeamDetails />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink, Download } from "lucide-react";
 import { mockContests } from "@/data/mockData";
 
 const ContestDetails = () => {
@@ -23,6 +23,9 @@ const ContestDetails = () => {
   }
 
   const problemKeys = Object.keys(contest.teams[0]?.problems || {});
+  
+  // Generate consistent colors for each problem
+  const problemColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,6 +43,33 @@ const ContestDetails = () => {
           <CardHeader>
             <CardTitle className="text-3xl">{contest.name}</CardTitle>
             <p className="text-gray-600">Contest Results</p>
+            <div className="flex gap-4 mt-4">
+              <Button 
+                onClick={() => window.open(contest.officialUrl, '_blank')}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Official Page
+              </Button>
+              <Button 
+                variant={contest.problemsUrl ? "default" : "secondary"}
+                disabled={!contest.problemsUrl}
+                onClick={() => contest.problemsUrl && window.open(contest.problemsUrl, '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Problems PDF
+              </Button>
+              <Button 
+                variant={contest.solutionsUrl ? "default" : "secondary"}
+                disabled={!contest.solutionsUrl}
+                onClick={() => contest.solutionsUrl && window.open(contest.solutionsUrl, '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Solutions PDF
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 
@@ -55,9 +85,15 @@ const ContestDetails = () => {
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Rank</th>
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Team Name</th>
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Penalty</th>
-                    {problemKeys.map(problem => (
+                    {problemKeys.map((problem, index) => (
                       <th key={problem} className="border border-gray-300 px-4 py-3 text-center font-semibold">
-                        Problem {problem}
+                        <div className="flex items-center justify-center gap-2">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: problemColors[index % problemColors.length] }}
+                          ></div>
+                          Problem {problem}
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -74,14 +110,17 @@ const ContestDetails = () => {
                       <td className="border border-gray-300 px-4 py-3">
                         {team.penalty}
                       </td>
-                      {problemKeys.map(problem => (
+                      {problemKeys.map((problem, problemIndex) => (
                         <td key={problem} className="border border-gray-300 px-4 py-3 text-center">
                           {team.problems[problem] ? (
-                            <div className="w-6 h-6 bg-green-500 rounded-full mx-auto flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">✓</span>
+                            <div 
+                              className="w-8 h-8 rounded-full mx-auto flex items-center justify-center"
+                              style={{ backgroundColor: problemColors[problemIndex % problemColors.length] }}
+                            >
+                              <span className="text-white text-xs font-bold">🎈</span>
                             </div>
                           ) : (
-                            <div className="w-6 h-6 bg-gray-300 rounded-full mx-auto"></div>
+                            <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto"></div>
                           )}
                         </td>
                       ))}
