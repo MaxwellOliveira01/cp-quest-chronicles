@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { dataService } from "@/services/dataService";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const ProfileDetails = () => {
   const { id } = useParams();
@@ -106,10 +106,11 @@ const ProfileDetails = () => {
                           props.payload.contest
                         ]}
                       />
-                      <Bar 
-                        dataKey="position" 
-                        fill={(entry) => entry.color}
-                      />
+                      <Bar dataKey="position">
+                        {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
