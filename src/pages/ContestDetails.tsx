@@ -3,13 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, ExternalLink, Download } from "lucide-react";
-import { mockContests } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
 
 const ContestDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const contest = mockContests.find(c => c.id === id);
+  const contest = dataService.findContest(id || "");
 
   if (!contest) {
     return (
@@ -112,12 +112,18 @@ const ContestDetails = () => {
                       </td>
                       {problemKeys.map((problem, problemIndex) => (
                         <td key={problem} className="border border-gray-300 px-4 py-3 text-center">
-                          {team.problems[problem] ? (
-                            <div 
-                              className="w-8 h-8 rounded-full mx-auto flex items-center justify-center"
-                              style={{ backgroundColor: problemColors[problemIndex % problemColors.length] }}
-                            >
-                              <span className="text-white text-xs font-bold">🎈</span>
+                          {team.problems[problem]?.solved ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <div 
+                                className="text-2xl"
+                                style={{ color: problemColors[problemIndex % problemColors.length] }}
+                              >
+                                🎈
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                <div>{team.problems[problem].submissions} tries</div>
+                                <div>{team.problems[problem].timeMinutes}min</div>
+                              </div>
                             </div>
                           ) : (
                             <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto"></div>

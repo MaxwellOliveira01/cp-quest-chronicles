@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-import { mockUniversities, mockContests } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
 
 const UniversityDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const university = mockUniversities.find(u => u.id === id);
+  const university = dataService.findUniversity(id || "");
 
   if (!university) {
     return (
@@ -49,8 +49,12 @@ const UniversityDetails = () => {
             <CardContent>
               <div className="space-y-3">
                 {university.students.map((student, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold">{student}</h4>
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Link to={`/profile/${student.profileId}`}>
+                      <h4 className="font-semibold text-blue-600 hover:text-blue-800">
+                        {student.name}
+                      </h4>
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -64,7 +68,7 @@ const UniversityDetails = () => {
             <CardContent>
               <div className="space-y-3">
                 {university.contests.map((contestName, index) => {
-                  const contest = mockContests.find(c => c.name === contestName);
+                  const contest = dataService.getContests().find(c => c.name === contestName);
                   return (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       {contest ? (
