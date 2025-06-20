@@ -6,6 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
 import { dataService, Team } from "@/services/dataService";
 
+interface ContestParticipation {
+  contestId: string;
+  name: string;
+  year: number;
+  problems?: Record<string, {
+    solved: boolean;
+    submissions?: number;
+    timeMinutes?: number;
+  }>;
+}
+
 const AdminTeams = () => {
   const navigate = useNavigate();
   const [teams, setTeams] = useState(dataService.getTeams());
@@ -15,12 +26,9 @@ const AdminTeams = () => {
     name: "",
     university: "",
     members: [] as string[],
-    contests: [] as Array<{
-      contestId: string;
-      name: string;
-      year: number;
-    }>
+    contests: [] as ContestParticipation[]
   });
+  const [selectedContestForProblems, setSelectedContestForProblems] = useState<string | null>(null);
 
   const profiles = dataService.getProfiles();
   const universities = dataService.getUniversities();
@@ -92,13 +100,33 @@ const AdminTeams = () => {
       const updatedContests = formData.contests.filter(c => c.contestId !== contestId);
       setFormData({ ...formData, contests: updatedContests });
     } else {
-      const newContest = {
+      const newContest: ContestParticipation = {
         contestId: contest.id,
         name: contest.name,
-        year: new Date().getFullYear() // Default to current year, could be made editable
+        year: new Date().getFullYear(),
+        problems: {}
       };
       setFormData({ ...formData, contests: [...formData.contests, newContest] });
     }
+  };
+
+  const handleProblemChange = (contestId: string, problemKey: string, field: string, value: any) => {
+    const updatedContests = formData.contests.map(contest => {
+      if (contest.contestId === contestId) {
+        const updatedProblems = { ...contest.problems };
+        if (!updatedProblems[problemKey]) {
+          updatedProblems[problemKey] = { solved: false };
+        }
+        updatedProblems[problemKey] = { ...updatedProblems[problemKey], [field]: value };
+        return { ...contest, problems: updatedProblems };
+      }
+      return contest;
+    });
+    setFormData({ ...formData, contests: updatedContests });
+  };
+
+  const generateProblemKeys = (count: number) => {
+    return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
   };
 
   return (
@@ -186,17 +214,72 @@ const AdminTeams = () => {
                   </label>
                   <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
                     {contests.map((contest) => (
-                      <label key={contest.id} className="flex items-center space-x-2 p-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.contests.some(c => c.contestId === contest.id)}
-                          onChange={() => handleContestToggle(contest.id)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">
-                          {contest.name}
-                        </span>
-                      </label>
+                      <div key={contest.id} className="p-2 border-b border-gray-100">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.contests.some(c => c.contestId === contest.id)}
+                            onChange={() => handleContestToggle(contest.id)}
+                            className="rounded"
+                          />
+                          <span className="text-sm font-medium">{contest.name}</span>
+                        </label>
+                        {formData.contests.some(c => c.contestId === contest.id) && (
+                          <div className="mt-2 ml-6">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedContestForProblems(
+                                selectedContestForProblems === contest.id ? null : contest.id
+                              )}
+                            >
+                              {selectedContestForProblems === contest.id ? 'Hide' : 'Show'} Problems
+                            </Button>
+                            {selectedContestForProblems === contest.id && (
+                              <div className="mt-2 grid grid-cols-2 gap-2">
+                                {generateProblemKeys(contest.problemCount).map(problemKey => {
+                                  const contestParticipation = formData.contests.find(c => c.contestId === contest.id);
+                                  const problem = contestParticipation?.problems?.[problemKey] || { solved: false };
+                                  
+                                  return (
+                                    <div key={problemKey} className="border border-gray-200 p-2 rounded">
+                                      <div className="font-medium text-sm">Problem {problemKey}</div>
+                                      <label className="flex items-center space-x-1 mt-1">
+                                        <input
+                                          type="checkbox"
+                                          checked={problem.solved}
+                                          onChange={(e) => handleProblemChange(contest.id, problemKey, 'solved', e.target.checked)}
+                                          className="rounded"
+                                        />
+                                        <span className="text-xs">Solved</span>
+                                      </label>
+                                      {problem.solved && (
+                                        <>
+                                          <input
+                                            type="number"
+                                            placeholder="Submissions"
+                                            value={problem.submissions || ''}
+                                            onChange={(e) => handleProblemChange(contest.id, problemKey, 'submissions', parseInt(e.target.value) ||0)}
+                                            className="w-full mt-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                                          />
+                                          <input
+                                            type="number"
+                                            placeholder="Time (minutes)"
+                                            value={problem.timeMinutes || ''}
+                                            onChange={(e) => handleProblemChange(contest.id, problemKey, 'timeMinutes', parseInt(e.target.value) || 0)}
+                                            className="w-full mt-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                                          />
+                                        </>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Selected: {formData.contests.length} contests</p>
@@ -212,6 +295,7 @@ const AdminTeams = () => {
                       setIsFormOpen(false);
                       setEditingTeam(null);
                       setFormData({ name: "", university: "", members: [], contests: [] });
+                      setSelectedContestForProblems(null);
                     }}
                   >
                     Cancel

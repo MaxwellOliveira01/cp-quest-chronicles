@@ -15,7 +15,8 @@ const AdminContests = () => {
     name: "",
     officialUrl: "",
     problemsUrl: "",
-    solutionsUrl: ""
+    solutionsUrl: "",
+    problemCount: 1
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,7 +41,7 @@ const AdminContests = () => {
     setContests(dataService.getContests());
     setIsFormOpen(false);
     setEditingContest(null);
-    setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "" });
+    setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
   };
 
   const handleEdit = (contest: Contest) => {
@@ -49,7 +50,8 @@ const AdminContests = () => {
       name: contest.name,
       officialUrl: contest.officialUrl,
       problemsUrl: contest.problemsUrl || "",
-      solutionsUrl: contest.solutionsUrl || ""
+      solutionsUrl: contest.solutionsUrl || "",
+      problemCount: contest.problemCount
     });
     setIsFormOpen(true);
   };
@@ -114,6 +116,20 @@ const AdminContests = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Problems
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="26"
+                    value={formData.problemCount}
+                    onChange={(e) => setFormData({ ...formData, problemCount: parseInt(e.target.value) || 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Problems URL (optional)
                   </label>
                   <input
@@ -144,7 +160,7 @@ const AdminContests = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingContest(null);
-                      setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "" });
+                      setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
                     }}
                   >
                     Cancel
@@ -170,6 +186,7 @@ const AdminContests = () => {
                         Official Site
                       </a>
                     </p>
+                    <p className="text-sm text-gray-600">{contest.problemCount} problems</p>
                     <p className="text-sm text-gray-600">{contest.teams.length} teams participated</p>
                   </div>
                   <div className="flex gap-2">
