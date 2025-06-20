@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -84,10 +83,19 @@ const AdminTeams = () => {
   };
 
   const handleMemberToggle = (profileId: string) => {
-    const members = formData.members.includes(profileId)
-      ? formData.members.filter(id => id !== profileId)
-      : [...formData.members, profileId];
-    setFormData({ ...formData, members });
+    const isCurrentlySelected = formData.members.includes(profileId);
+    
+    if (isCurrentlySelected) {
+      // Remove member
+      const members = formData.members.filter(id => id !== profileId);
+      setFormData({ ...formData, members });
+    } else {
+      // Add member (only if under limit)
+      if (formData.members.length < 3) {
+        const members = [...formData.members, profileId];
+        setFormData({ ...formData, members });
+      }
+    }
   };
 
   const handleContestToggle = (contestId: string) => {
@@ -191,20 +199,25 @@ const AdminTeams = () => {
                     Team Members (max 3)
                   </label>
                   <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
-                    {profiles.map((profile) => (
-                      <label key={profile.id} className="flex items-center space-x-2 p-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.members.includes(profile.id)}
-                          onChange={() => handleMemberToggle(profile.id)}
-                          disabled={!formData.members.includes(profile.id) && formData.members.length >= 3}
-                          className="rounded"
-                        />
-                        <span className={`text-sm ${!formData.members.includes(profile.id) && formData.members.length >= 3 ? 'text-gray-400' : ''}`}>
-                          {profile.name} ({profile.handle}) - {profile.university}
-                        </span>
-                      </label>
-                    ))}
+                    {profiles.map((profile) => {
+                      const isSelected = formData.members.includes(profile.id);
+                      const canSelect = isSelected || formData.members.length < 3;
+                      
+                      return (
+                        <label key={profile.id} className="flex items-center space-x-2 p-1">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleMemberToggle(profile.id)}
+                            disabled={!canSelect}
+                            className="rounded"
+                          />
+                          <span className={`text-sm ${!canSelect ? 'text-gray-400' : ''}`}>
+                            {profile.name} ({profile.handle}) - {profile.university}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Selected: {formData.members.length}/3</p>
                 </div>
@@ -260,7 +273,7 @@ const AdminTeams = () => {
                                             type="number"
                                             placeholder="Submissions"
                                             value={problem.submissions || ''}
-                                            onChange={(e) => handleProblemChange(contest.id, problemKey, 'submissions', parseInt(e.target.value) ||0)}
+                                            onChange={(e) => handleProblemChange(contest.id, problemKey, 'submissions', parseInt(e.target.value) || 0)}
                                             className="w-full mt-1 px-2 py-1 text-xs border border-gray-300 rounded"
                                           />
                                           <input
