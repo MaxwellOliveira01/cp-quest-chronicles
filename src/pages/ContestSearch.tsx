@@ -4,17 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { mockContests } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
 
 const ContestSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<typeof mockContests>([]);
+  const [results, setResults] = useState<ReturnType<typeof dataService.getContests>>([]);
   const navigate = useNavigate();
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-      const filtered = mockContests.filter(
+      const contests = dataService.getContests();
+      const filtered = contests.filter(
         contest => 
           contest.name.toLowerCase().includes(value.toLowerCase())
       );

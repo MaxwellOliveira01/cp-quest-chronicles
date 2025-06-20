@@ -4,17 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { mockTeams } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
 
 const TeamSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<typeof mockTeams>([]);
+  const [results, setResults] = useState<ReturnType<typeof dataService.getTeams>>([]);
   const navigate = useNavigate();
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-      const filtered = mockTeams.filter(
+      const teams = dataService.getTeams();
+      const filtered = teams.filter(
         team => 
           team.name.toLowerCase().includes(value.toLowerCase()) ||
           team.university.toLowerCase().includes(value.toLowerCase())
@@ -72,7 +73,7 @@ const TeamSearch = () => {
                       </h3>
                       <p className="text-gray-600">{team.university}</p>
                       <p className="text-sm text-gray-500">
-                        Members: {team.members.join(", ")}
+                        Members: {team.members.map(m => m.name).join(", ")}
                       </p>
                     </div>
                     <div className="text-right">

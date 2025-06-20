@@ -14,11 +14,17 @@ const AdminTeams = () => {
   const [formData, setFormData] = useState({
     name: "",
     university: "",
-    members: [] as string[]
+    members: [] as string[],
+    contests: [] as Array<{
+      contestId: string;
+      name: string;
+      year: number;
+    }>
   });
 
   const profiles = dataService.getProfiles();
   const universities = dataService.getUniversities();
+  const contests = dataService.getContests();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,21 +39,22 @@ const AdminTeams = () => {
         ...editingTeam,
         name: formData.name,
         university: formData.university,
-        members: selectedMembers
+        members: selectedMembers,
+        contests: formData.contests
       });
     } else {
       dataService.addTeam({
         name: formData.name,
         university: formData.university,
         members: selectedMembers,
-        contests: []
+        contests: formData.contests
       });
     }
     
     setTeams(dataService.getTeams());
     setIsFormOpen(false);
     setEditingTeam(null);
-    setFormData({ name: "", university: "", members: [] });
+    setFormData({ name: "", university: "", members: [], contests: [] });
   };
 
   const handleEdit = (team: Team) => {
@@ -55,7 +62,8 @@ const AdminTeams = () => {
     setFormData({
       name: team.name,
       university: team.university,
-      members: team.members.map(m => m.profileId)
+      members: team.members.map(m => m.profileId),
+      contests: team.contests
     });
     setIsFormOpen(true);
   };
@@ -72,6 +80,25 @@ const AdminTeams = () => {
       ? formData.members.filter(id => id !== profileId)
       : [...formData.members, profileId];
     setFormData({ ...formData, members });
+  };
+
+  const handleContestToggle = (contestId: string) => {
+    const contest = contests.find(c => c.id === contestId);
+    if (!contest) return;
+
+    const isSelected = formData.contests.some(c => c.contestId === contestId);
+    
+    if (isSelected) {
+      const updatedContests = formData.contests.filter(c => c.contestId !== contestId);
+      setFormData({ ...formData, contests: updatedContests });
+    } else {
+      const newContest = {
+        contestId: contest.id,
+        name: contest.name,
+        year: new Date().getFullYear() // Default to current year, could be made editable
+      };
+      setFormData({ ...formData, contests: [...formData.contests, newContest] });
+    }
   };
 
   return (
@@ -153,6 +180,27 @@ const AdminTeams = () => {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Selected: {formData.members.length}/3</p>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contests Participated
+                  </label>
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+                    {contests.map((contest) => (
+                      <label key={contest.id} className="flex items-center space-x-2 p-1">
+                        <input
+                          type="checkbox"
+                          checked={formData.contests.some(c => c.contestId === contest.id)}
+                          onChange={() => handleContestToggle(contest.id)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">
+                          {contest.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Selected: {formData.contests.length} contests</p>
+                </div>
                 <div className="flex gap-4">
                   <Button type="submit" disabled={formData.members.length === 0}>
                     {editingTeam ? 'Update' : 'Create'} Team
@@ -163,7 +211,7 @@ const AdminTeams = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingTeam(null);
-                      setFormData({ name: "", university: "", members: [] });
+                      setFormData({ name: "", university: "", members: [], contests: [] });
                     }}
                   >
                     Cancel
