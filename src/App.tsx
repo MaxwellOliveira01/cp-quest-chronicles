@@ -16,6 +16,11 @@ import TeamDetails from "./pages/TeamDetails";
 import EventDetails from "./pages/EventDetails";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminProfiles from "./pages/AdminProfiles";
+import AdminUniversities from "./pages/AdminUniversities";
+import AdminEvents from "./pages/AdminEvents";
+import AdminTeams from "./pages/AdminTeams";
+import AdminContests from "./pages/AdminContests";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +44,11 @@ const App = () => (
           <Route path="/event/:id" element={<EventDetails />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/profiles" element={<AdminProfiles />} />
+          <Route path="/admin/universities" element={<AdminUniversities />} />
+          <Route path="/admin/events" element={<AdminEvents />} />
+          <Route path="/admin/teams" element={<AdminTeams />} />
+          <Route path="/admin/contests" element={<AdminContests />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
