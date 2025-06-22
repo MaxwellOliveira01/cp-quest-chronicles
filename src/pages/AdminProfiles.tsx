@@ -1,14 +1,16 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
-import { dataService, Profile } from "@/services/dataService";
+import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
+import { dataService, Profile, University } from "@/services/dataService";
 
 const AdminProfiles = () => {
   const navigate = useNavigate();
-  const [profiles, setProfiles] = useState(dataService.getProfiles());
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
@@ -17,30 +19,51 @@ const AdminProfiles = () => {
     university: ""
   });
 
-  const universities = dataService.getUniversities();
-  const events = dataService.getEvents();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profilesData, universitiesData] = await Promise.all([
+          dataService.getProfiles(),
+          dataService.getUniversities()
+        ]);
+        setProfiles(profilesData);
+        setUniversities(universitiesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSubmit = (e: React.FormEvent) => {
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingProfile) {
-      dataService.updateProfile(editingProfile.id, {
-        ...editingProfile,
-        ...formData
-      });
-    } else {
-      dataService.addProfile({
-        ...formData,
-        contests: [],
-        teams: [],
-        events: []
-      });
+    try {
+      if (editingProfile) {
+        await dataService.updateProfile(editingProfile.id, {
+          ...editingProfile,
+          ...formData
+        });
+      } else {
+        await dataService.addProfile({
+          ...formData,
+          contests: [],
+          teams: [],
+          events: []
+        });
+      }
+      
+      const profilesData = await dataService.getProfiles();
+      setProfiles(profilesData);
+      setIsFormOpen(false);
+      setEditingProfile(null);
+      setFormData({ name: "", handle: "", university: "" });
+    } catch (error) {
+      console.error("Error saving profile:", error);
     }
-    
-    setProfiles(dataService.getProfiles());
-    setIsFormOpen(false);
-    setEditingProfile(null);
-    setFormData({ name: "", handle: "", university: "" });
   };
 
   const handleEdit = (profile: Profile) => {
@@ -53,12 +76,25 @@ const AdminProfiles = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this profile?")) {
-      dataService.deleteProfile(id);
-      setProfiles(dataService.getProfiles());
+      try {
+        await dataService.deleteProfile(id);
+        const profilesData = await dataService.getProfiles();
+        setProfiles(profilesData);
+      } catch (error) {
+        console.error("Error deleting profile:", error);
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

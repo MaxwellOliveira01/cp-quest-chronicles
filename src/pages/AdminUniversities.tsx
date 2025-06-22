@@ -1,14 +1,15 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
 import { dataService, University } from "@/services/dataService";
 
 const AdminUniversities = () => {
   const navigate = useNavigate();
-  const [universities, setUniversities] = useState(dataService.getUniversities());
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUniversity, setEditingUniversity] = useState<University | null>(null);
   const [formData, setFormData] = useState({
@@ -16,25 +17,45 @@ const AdminUniversities = () => {
     contests: [] as string[]
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        const universitiesData = await dataService.getUniversities();
+        setUniversities(universitiesData);
+      } catch (error) {
+        console.error("Error fetching universities:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUniversities();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingUniversity) {
-      dataService.updateUniversity(editingUniversity.id, {
-        ...editingUniversity,
-        ...formData
-      });
-    } else {
-      dataService.addUniversity({
-        ...formData,
-        students: []
-      });
+    try {
+      if (editingUniversity) {
+        await dataService.updateUniversity(editingUniversity.id, {
+          ...editingUniversity,
+          ...formData
+        });
+      } else {
+        await dataService.addUniversity({
+          ...formData,
+          students: []
+        });
+      }
+      
+      const universitiesData = await dataService.getUniversities();
+      setUniversities(universitiesData);
+      setIsFormOpen(false);
+      setEditingUniversity(null);
+      setFormData({ name: "", contests: [] });
+    } catch (error) {
+      console.error("Error saving university:", error);
     }
-    
-    setUniversities(dataService.getUniversities());
-    setIsFormOpen(false);
-    setEditingUniversity(null);
-    setFormData({ name: "", contests: [] });
   };
 
   const handleEdit = (university: University) => {
@@ -46,12 +67,25 @@ const AdminUniversities = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this university?")) {
-      dataService.deleteUniversity(id);
-      setUniversities(dataService.getUniversities());
+      try {
+        await dataService.deleteUniversity(id);
+        const universitiesData = await dataService.getUniversities();
+        setUniversities(universitiesData);
+      } catch (error) {
+        console.error("Error deleting university:", error);
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

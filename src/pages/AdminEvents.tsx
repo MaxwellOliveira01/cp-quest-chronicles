@@ -1,14 +1,16 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
-import { dataService, Event } from "@/services/dataService";
+import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
+import { dataService, Event, Profile } from "@/services/dataService";
 
 const AdminEvents = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState(dataService.getEvents());
+  const [events, setEvents] = useState<Event[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState({
@@ -19,24 +21,46 @@ const AdminEvents = () => {
     participants: [] as string[]
   });
 
-  const profiles = dataService.getProfiles();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [eventsData, profilesData] = await Promise.all([
+          dataService.getEvents(),
+          dataService.getProfiles()
+        ]);
+        setEvents(eventsData);
+        setProfiles(profilesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSubmit = (e: React.FormEvent) => {
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingEvent) {
-      dataService.updateEvent(editingEvent.id, {
-        ...editingEvent,
-        ...formData
-      });
-    } else {
-      dataService.addEvent(formData);
+    try {
+      if (editingEvent) {
+        await dataService.updateEvent(editingEvent.id, {
+          ...editingEvent,
+          ...formData
+        });
+      } else {
+        await dataService.addEvent(formData);
+      }
+      
+      const eventsData = await dataService.getEvents();
+      setEvents(eventsData);
+      setIsFormOpen(false);
+      setEditingEvent(null);
+      setFormData({ name: "", location: "", startDate: "", endDate: "", participants: [] });
+    } catch (error) {
+      console.error("Error saving event:", error);
     }
-    
-    setEvents(dataService.getEvents());
-    setIsFormOpen(false);
-    setEditingEvent(null);
-    setFormData({ name: "", location: "", startDate: "", endDate: "", participants: [] });
   };
 
   const handleEdit = (event: Event) => {
@@ -51,10 +75,15 @@ const AdminEvents = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this event?")) {
-      dataService.deleteEvent(id);
-      setEvents(dataService.getEvents());
+      try {
+        await dataService.deleteEvent(id);
+        const eventsData = await dataService.getEvents();
+        setEvents(eventsData);
+      } catch (error) {
+        console.error("Error deleting event:", error);
+      }
     }
   };
 
@@ -64,6 +93,14 @@ const AdminEvents = () => {
       : [...formData.participants, profileId];
     setFormData({ ...formData, participants });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

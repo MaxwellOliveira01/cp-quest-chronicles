@@ -1,14 +1,15 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Plus, Edit, Trash } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
 import { dataService, Contest } from "@/services/dataService";
 
 const AdminContests = () => {
   const navigate = useNavigate();
-  const [contests, setContests] = useState(dataService.getContests());
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingContest, setEditingContest] = useState<Contest | null>(null);
   const [formData, setFormData] = useState({
@@ -19,29 +20,49 @@ const AdminContests = () => {
     problemCount: 1
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchContests = async () => {
+      try {
+        const contestsData = await dataService.getContests();
+        setContests(contestsData);
+      } catch (error) {
+        console.error("Error fetching contests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContests();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingContest) {
-      dataService.updateContest(editingContest.id, {
-        ...editingContest,
-        ...formData,
-        problemsUrl: formData.problemsUrl || null,
-        solutionsUrl: formData.solutionsUrl || null
-      });
-    } else {
-      dataService.addContest({
-        ...formData,
-        problemsUrl: formData.problemsUrl || null,
-        solutionsUrl: formData.solutionsUrl || null,
-        teams: []
-      });
+    try {
+      if (editingContest) {
+        await dataService.updateContest(editingContest.id, {
+          ...editingContest,
+          ...formData,
+          problemsUrl: formData.problemsUrl || null,
+          solutionsUrl: formData.solutionsUrl || null
+        });
+      } else {
+        await dataService.addContest({
+          ...formData,
+          problemsUrl: formData.problemsUrl || null,
+          solutionsUrl: formData.solutionsUrl || null,
+          teams: []
+        });
+      }
+      
+      const contestsData = await dataService.getContests();
+      setContests(contestsData);
+      setIsFormOpen(false);
+      setEditingContest(null);
+      setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
+    } catch (error) {
+      console.error("Error saving contest:", error);
     }
-    
-    setContests(dataService.getContests());
-    setIsFormOpen(false);
-    setEditingContest(null);
-    setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
   };
 
   const handleEdit = (contest: Contest) => {
@@ -56,12 +77,25 @@ const AdminContests = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this contest?")) {
-      dataService.deleteContest(id);
-      setContests(dataService.getContests());
+      try {
+        await dataService.deleteContest(id);
+        const contestsData = await dataService.getContests();
+        setContests(contestsData);
+      } catch (error) {
+        console.error("Error deleting contest:", error);
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
