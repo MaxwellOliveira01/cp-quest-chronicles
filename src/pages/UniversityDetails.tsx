@@ -1,15 +1,47 @@
 
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { dataService, University, Contest } from "@/services/dataService";
 
 const UniversityDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const university = dataService.findUniversity(id || "");
+  const [university, setUniversity] = useState<University | null>(null);
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUniversityDetails = async () => {
+      if (!id) return;
+      
+      try {
+        const [foundUniversity, contestsData] = await Promise.all([
+          dataService.findUniversity(id),
+          dataService.getContests()
+        ]);
+        
+        setUniversity(foundUniversity || null);
+        setContests(contestsData);
+      } catch (error) {
+        console.error("Error fetching university details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUniversityDetails();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!university) {
     return (
@@ -68,7 +100,7 @@ const UniversityDetails = () => {
             <CardContent>
               <div className="space-y-3">
                 {university.contests.map((contestName, index) => {
-                  const contest = dataService.getContests().find(c => c.name === contestName);
+                  const contest = contests.find(c => c.name === contestName);
                   return (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       {contest ? (

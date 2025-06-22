@@ -1,15 +1,41 @@
 
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, ExternalLink, Download } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { ArrowLeft, ExternalLink, Download, Loader2 } from "lucide-react";
+import { dataService, Contest } from "@/services/dataService";
 
 const ContestDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const contest = dataService.findContest(id || "");
+  const [contest, setContest] = useState<Contest | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContest = async () => {
+      if (!id) return;
+      
+      try {
+        const foundContest = await dataService.findContest(id);
+        setContest(foundContest || null);
+      } catch (error) {
+        console.error("Error fetching contest:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContest();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!contest) {
     return (

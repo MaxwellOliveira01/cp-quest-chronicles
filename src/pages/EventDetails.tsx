@@ -1,15 +1,52 @@
 
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Calendar } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { ArrowLeft, MapPin, Calendar, Loader2 } from "lucide-react";
+import { dataService, Event, Profile } from "@/services/dataService";
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const event = dataService.findEvent(id || "");
+  const [event, setEvent] = useState<Event | null>(null);
+  const [participants, setParticipants] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      if (!id) return;
+      
+      try {
+        const foundEvent = await dataService.findEvent(id);
+        if (foundEvent) {
+          setEvent(foundEvent);
+          
+          // Get participant profiles
+          const participantProfiles = await Promise.all(
+            foundEvent.participants.map(participantId => 
+              dataService.findProfile(participantId)
+            )
+          );
+          setParticipants(participantProfiles.filter(Boolean) as Profile[]);
+        }
+      } catch (error) {
+        console.error("Error fetching event details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventDetails();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -21,11 +58,6 @@ const EventDetails = () => {
       </div>
     );
   }
-
-  // Get participant profiles
-  const participants = event.participants.map(participantId => 
-    dataService.findProfile(participantId)
-  ).filter(Boolean);
 
   return (
     <div className="min-h-screen bg-gray-50">

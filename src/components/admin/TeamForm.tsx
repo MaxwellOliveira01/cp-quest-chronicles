@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { dataService, Team } from "@/services/dataService";
+import { Loader2 } from "lucide-react";
+import { dataService, Team, Profile, University, Contest } from "@/services/dataService";
 
 interface ContestParticipation {
   contestId: string;
@@ -29,10 +31,35 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     contests: [] as ContestParticipation[]
   });
   const [selectedContestForProblems, setSelectedContestForProblems] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const profiles = dataService.getProfiles();
-  const universities = dataService.getUniversities();
-  const contests = dataService.getContests();
+  // Load data when form opens
+  useEffect(() => {
+    if (isOpen) {
+      loadFormData();
+    }
+  }, [isOpen]);
+
+  const loadFormData = async () => {
+    setLoading(true);
+    try {
+      const [profilesData, universitiesData, contestsData] = await Promise.all([
+        dataService.getProfiles(),
+        dataService.getUniversities(),
+        dataService.getContests()
+      ]);
+      setProfiles(profilesData);
+      setUniversities(universitiesData);
+      setContests(contestsData);
+    } catch (error) {
+      console.error("Error loading form data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Reset form data when editingTeam changes
   useEffect(() => {
@@ -54,7 +81,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     setSelectedContestForProblems(null);
   }, [editingTeam, isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const selectedMembers = formData.members.map(memberId => {
@@ -62,24 +89,28 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
       return { name: profile?.name || "", profileId: memberId };
     });
     
-    if (editingTeam) {
-      dataService.updateTeam(editingTeam.id, {
-        ...editingTeam,
-        name: formData.name,
-        university: formData.university,
-        members: selectedMembers,
-        contests: formData.contests
-      });
-    } else {
-      dataService.addTeam({
-        name: formData.name,
-        university: formData.university,
-        members: selectedMembers,
-        contests: formData.contests
-      });
+    try {
+      if (editingTeam) {
+        await dataService.updateTeam(editingTeam.id, {
+          ...editingTeam,
+          name: formData.name,
+          university: formData.university,
+          members: selectedMembers,
+          contests: formData.contests
+        });
+      } else {
+        await dataService.addTeam({
+          name: formData.name,
+          university: formData.university,
+          members: selectedMembers,
+          contests: formData.contests
+        });
+      }
+      
+      onSave();
+    } catch (error) {
+      console.error("Error saving team:", error);
     }
-    
-    onSave();
   };
 
   const handleMemberToggle = (profileId: string) => {
@@ -136,6 +167,16 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
   };
 
   if (!isOpen) return null;
+
+  if (loading) {
+    return (
+      <Card className="mb-8">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="mb-8">

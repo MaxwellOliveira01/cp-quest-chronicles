@@ -1,26 +1,34 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { dataService } from "@/services/dataService";
+import { dataService, Team } from "@/services/dataService";
 
 const TeamSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<ReturnType<typeof dataService.getTeams>>([]);
+  const [results, setResults] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = (value: string) => {
+  const handleSearch = async (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-      const teams = dataService.getTeams();
-      const filtered = teams.filter(
-        team => 
-          team.name.toLowerCase().includes(value.toLowerCase()) ||
-          team.university.toLowerCase().includes(value.toLowerCase())
-      );
-      setResults(filtered);
+      setLoading(true);
+      try {
+        const teams = await dataService.getTeams();
+        const filtered = teams.filter(
+          team => 
+            team.name.toLowerCase().includes(value.toLowerCase()) ||
+            team.university.toLowerCase().includes(value.toLowerCase())
+        );
+        setResults(filtered);
+      } catch (error) {
+        console.error("Error searching teams:", error);
+      } finally {
+        setLoading(false);
+      }
     } else {
       setResults([]);
     }
@@ -58,7 +66,13 @@ const TeamSearch = () => {
             />
           </div>
 
-          {results.length > 0 && (
+          {loading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          )}
+
+          {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
               {results.map((team) => (
                 <Link
@@ -90,7 +104,7 @@ const TeamSearch = () => {
             </div>
           )}
 
-          {searchTerm && results.length === 0 && (
+          {!loading && searchTerm && results.length === 0 && (
             <div className="text-center py-8">
               <p className="text-gray-500">No teams found matching "{searchTerm}"</p>
             </div>

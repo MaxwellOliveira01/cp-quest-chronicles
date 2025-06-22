@@ -2,22 +2,43 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 import { dataService, Team } from "@/services/dataService";
 import { TeamForm } from "@/components/admin/TeamForm";
 import { TeamsList } from "@/components/admin/TeamsList";
 
 const AdminTeams = () => {
   const navigate = useNavigate();
-  const [teams, setTeams] = useState(dataService.getTeams());
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamsData = await dataService.getTeams();
+        setTeams(teamsData);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeams();
+  }, []);
+
   // Refresh teams list whenever the form closes or team is saved
-  const refreshTeams = () => {
-    setTeams(dataService.getTeams());
-    setIsFormOpen(false);
-    setEditingTeam(null);
+  const refreshTeams = async () => {
+    try {
+      const teamsData = await dataService.getTeams();
+      setTeams(teamsData);
+      setIsFormOpen(false);
+      setEditingTeam(null);
+    } catch (error) {
+      console.error("Error refreshing teams:", error);
+    }
   };
 
   const handleEdit = (team: Team) => {
@@ -25,10 +46,15 @@ const AdminTeams = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this team?")) {
-      dataService.deleteTeam(id);
-      setTeams(dataService.getTeams());
+      try {
+        await dataService.deleteTeam(id);
+        const teamsData = await dataService.getTeams();
+        setTeams(teamsData);
+      } catch (error) {
+        console.error("Error deleting team:", error);
+      }
     }
   };
 
@@ -36,6 +62,14 @@ const AdminTeams = () => {
     setIsFormOpen(false);
     setEditingTeam(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -17,7 +17,7 @@ const LandingPage = () => {
     {
       title: "Search Universities",
       description: "Explore universities and their participants",
-      icon: GraduationCat,
+      icon: GraduationCap,
       path: "/search/university"
     },
     {
