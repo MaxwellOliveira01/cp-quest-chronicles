@@ -13,6 +13,7 @@ export interface Team {
     name: string;
     year: number;
     contestId: string;
+    position?: number;
     problems?: Record<string, {
       solved: boolean;
       submissions?: number;
@@ -43,6 +44,7 @@ class TeamService extends BaseService<Team> {
             name: "ICPC World Finals 2020", 
             year: 2020, 
             contestId: "1",
+            position: 15,
             problems: {
               A: { solved: true, submissions: 1, timeMinutes: 15 },
               B: { solved: true, submissions: 2, timeMinutes: 45 },
@@ -50,7 +52,12 @@ class TeamService extends BaseService<Team> {
               D: { solved: true, submissions: 3, timeMinutes: 120 }
             }
           },
-          { name: "ICPC Regional 2023", year: 2023, contestId: "4" }
+          { 
+            name: "ICPC Regional 2023", 
+            year: 2023, 
+            contestId: "4",
+            position: 3
+          }
         ]
       },
       {
@@ -63,7 +70,12 @@ class TeamService extends BaseService<Team> {
           { name: "Sarah Kim", profileId: "11" }
         ],
         contests: [
-          { name: "Google Code Jam 2021", year: 2021, contestId: "2" }
+          { 
+            name: "Google Code Jam 2021", 
+            year: 2021, 
+            contestId: "2",
+            position: 8
+          }
         ]
       },
       {
@@ -76,7 +88,12 @@ class TeamService extends BaseService<Team> {
           { name: "Lisa Wang", profileId: "13" }
         ],
         contests: [
-          { name: "Facebook Hacker Cup 2022", year: 2022, contestId: "3" }
+          { 
+            name: "Facebook Hacker Cup 2022", 
+            year: 2022, 
+            contestId: "3",
+            position: 12
+          }
         ]
       },
       {
@@ -89,7 +106,12 @@ class TeamService extends BaseService<Team> {
           { name: "Grace Lee", profileId: "7" }
         ],
         contests: [
-          { name: "ICPC Regional 2019", year: 2019, contestId: "4" }
+          { 
+            name: "ICPC Regional 2019", 
+            year: 2019, 
+            contestId: "4",
+            position: 5
+          }
         ]
       },
       {
@@ -102,7 +124,12 @@ class TeamService extends BaseService<Team> {
           { name: "Amy Chen", profileId: "15" }
         ],
         contests: [
-          { name: "Google Code Jam 2020", year: 2020, contestId: "2" }
+          { 
+            name: "Google Code Jam 2020", 
+            year: 2020, 
+            contestId: "2",
+            position: 20
+          }
         ]
       },
       {
@@ -115,7 +142,12 @@ class TeamService extends BaseService<Team> {
           { name: "Ivan Rodriguez", profileId: "9" }
         ],
         contests: [
-          { name: "ICPC World Finals 2021", year: 2021, contestId: "1" }
+          { 
+            name: "ICPC World Finals 2021", 
+            year: 2021, 
+            contestId: "1",
+            position: 25
+          }
         ]
       }
     ]);

@@ -1,16 +1,43 @@
 
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import { dataService } from "@/services/dataService";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { dataService, Profile } from "@/services/dataService";
+import ContestPerformance from "@/components/ContestPerformance";
 
 const ProfileDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const profile = dataService.findProfile(id || "");
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const foundProfile = await dataService.findProfile(id);
+        setProfile(foundProfile || null);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!profile) {
     return (
@@ -23,25 +50,12 @@ const ProfileDetails = () => {
     );
   }
 
-  // Group contests by year and create chart data
-  const contestsByYear = profile.contests.reduce((acc, contest) => {
-    if (!acc[contest.year]) {
-      acc[contest.year] = [];
-    }
-    acc[contest.year].push(contest);
-    return acc;
-  }, {} as Record<number, typeof profile.contests>);
-
-  const chartData = Object.entries(contestsByYear).flatMap(([year, contests]) => 
-    contests.map((contest, index) => ({
-      year: parseInt(year),
-      position: contest.position,
-      contest: contest.contest,
-      contestId: contest.contestId,
-      yearIndex: index,
-      color: `hsl(${(parseInt(year) - 2019) * 60}, 70%, 50%)`
-    }))
-  );
+  const contestData = profile.contests.map(contest => ({
+    year: contest.year,
+    contest: contest.contest,
+    position: contest.position,
+    contestId: contest.contestId
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,36 +100,7 @@ const ProfileDetails = () => {
               </Card>
             )}
 
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Contest Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis 
-                        reversed 
-                        label={{ value: 'Position', angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip 
-                        formatter={(value, name, props) => [
-                          `Position: ${value}`, 
-                          props.payload.contest
-                        ]}
-                      />
-                      <Bar dataKey="position">
-                        {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+            <ContestPerformance contests={contestData} />
           </div>
 
           <div>

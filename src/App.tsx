@@ -14,7 +14,6 @@ import UniversityDetails from "./pages/UniversityDetails";
 import ContestDetails from "./pages/ContestDetails";
 import TeamDetails from "./pages/TeamDetails";
 import EventDetails from "./pages/EventDetails";
-import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProfiles from "./pages/AdminProfiles";
 import AdminUniversities from "./pages/AdminUniversities";
@@ -42,7 +41,6 @@ const App = () => (
           <Route path="/contest/:id" element={<ContestDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
           <Route path="/event/:id" element={<EventDetails />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/profiles" element={<AdminProfiles />} />
           <Route path="/admin/universities" element={<AdminUniversities />} />

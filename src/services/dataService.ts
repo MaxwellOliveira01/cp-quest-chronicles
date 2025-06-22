@@ -9,110 +9,140 @@ import { eventService, Event } from './eventService';
 export type { Profile, University, Team, Contest, Event };
 
 class DataService {
-  // Getter methods
-  getProfiles(): Profile[] {
+  private async delay(): Promise<void> {
+    const randomDelay = Math.random() * 1500 + 500; // 0.5 to 2 seconds
+    return new Promise(resolve => setTimeout(resolve, randomDelay));
+  }
+
+  // Getter methods with async delays
+  async getProfiles(): Promise<Profile[]> {
+    await this.delay();
     return profileService.getAll();
   }
 
-  getUniversities(): University[] {
+  async getUniversities(): Promise<University[]> {
+    await this.delay();
     return universityService.getAll();
   }
 
-  getTeams(): Team[] {
+  async getTeams(): Promise<Team[]> {
+    await this.delay();
     return teamService.getAll();
   }
 
-  getContests(): Contest[] {
+  async getContests(): Promise<Contest[]> {
+    await this.delay();
     return contestService.getAll();
   }
 
-  getEvents(): Event[] {
+  async getEvents(): Promise<Event[]> {
+    await this.delay();
     return eventService.getAll();
   }
 
-  // Find methods
-  findProfile(id: string): Profile | undefined {
+  // Find methods with async delays
+  async findProfile(id: string): Promise<Profile | undefined> {
+    await this.delay();
     return profileService.findById(id);
   }
 
-  findUniversity(id: string): University | undefined {
+  async findUniversity(id: string): Promise<University | undefined> {
+    await this.delay();
     return universityService.findById(id);
   }
 
-  findTeam(id: string): Team | undefined {
+  async findTeam(id: string): Promise<Team | undefined> {
+    await this.delay();
     return teamService.findById(id);
   }
 
-  findContest(id: string): Contest | undefined {
+  async findContest(id: string): Promise<Contest | undefined> {
+    await this.delay();
     return contestService.findById(id);
   }
 
-  findEvent(id: string): Event | undefined {
+  async findEvent(id: string): Promise<Event | undefined> {
+    await this.delay();
     return eventService.findById(id);
   }
 
-  // CRUD operations for Profiles
-  addProfile(profile: Omit<Profile, 'id'>): Profile {
+  // CRUD operations for Profiles with async delays
+  async addProfile(profile: Omit<Profile, 'id'>): Promise<Profile> {
+    await this.delay();
     return profileService.add(profile);
   }
 
-  updateProfile(id: string, updates: Partial<Profile>): Profile | null {
+  async updateProfile(id: string, updates: Partial<Profile>): Promise<Profile | null> {
+    await this.delay();
     return profileService.update(id, updates);
   }
 
-  deleteProfile(id: string): boolean {
+  async deleteProfile(id: string): Promise<boolean> {
+    await this.delay();
     return profileService.delete(id);
   }
 
-  // CRUD operations for Universities
-  addUniversity(university: Omit<University, 'id'>): University {
+  // CRUD operations for Universities with async delays
+  async addUniversity(university: Omit<University, 'id'>): Promise<University> {
+    await this.delay();
     return universityService.add(university);
   }
 
-  updateUniversity(id: string, updates: Partial<University>): University | null {
+  async updateUniversity(id: string, updates: Partial<University>): Promise<University | null> {
+    await this.delay();
     return universityService.update(id, updates);
   }
 
-  deleteUniversity(id: string): boolean {
+  async deleteUniversity(id: string): Promise<boolean> {
+    await this.delay();
     return universityService.delete(id);
   }
 
-  // CRUD operations for Teams
-  addTeam(team: Omit<Team, 'id'>): Team {
+  // CRUD operations for Teams with async delays
+  async addTeam(team: Omit<Team, 'id'>): Promise<Team> {
+    await this.delay();
     return teamService.add(team);
   }
 
-  updateTeam(id: string, updates: Partial<Team>): Team | null {
+  async updateTeam(id: string, updates: Partial<Team>): Promise<Team | null> {
+    await this.delay();
     return teamService.update(id, updates);
   }
 
-  deleteTeam(id: string): boolean {
+  async deleteTeam(id: string): Promise<boolean> {
+    await this.delay();
     return teamService.delete(id);
   }
 
-  // CRUD operations for Contests
-  addContest(contest: Omit<Contest, 'id'>): Contest {
+  // CRUD operations for Contests with async delays
+  async addContest(contest: Omit<Contest, 'id'>): Promise<Contest> {
+    await this.delay();
     return contestService.add(contest);
   }
 
-  updateContest(id: string, updates: Partial<Contest>): Contest | null {
+  async updateContest(id: string, updates: Partial<Contest>): Promise<Contest | null> {
+    await this.delay();
     return contestService.update(id, updates);
   }
 
-  deleteContest(id: string): boolean {
+  async deleteContest(id: string): Promise<boolean> {
+    await this.delay();
     return contestService.delete(id);
   }
 
-  // CRUD operations for Events
-  addEvent(event: Omit<Event, 'id'>): Event {
+  // CRUD operations for Events with async delays
+  async addEvent(event: Omit<Event, 'id'>): Promise<Event> {
+    await this.delay();
     return eventService.add(event);
   }
 
-  updateEvent(id: string, updates: Partial<Event>): Event | null {
+  async updateEvent(id: string, updates: Partial<Event>): Promise<Event | null> {
+    await this.delay();
     return eventService.update(id, updates);
   }
 
-  deleteEvent(id: string): boolean {
+  async deleteEvent(id: string): Promise<boolean> {
+    await this.delay();
     return eventService.delete(id);
   }
 }

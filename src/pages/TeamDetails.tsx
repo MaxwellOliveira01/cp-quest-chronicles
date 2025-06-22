@@ -1,15 +1,43 @@
 
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { dataService, Team } from "@/services/dataService";
+import ContestPerformance from "@/components/ContestPerformance";
 
 const TeamDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const team = dataService.findTeam(id || "");
+  const [team, setTeam] = useState<Team | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const foundTeam = await dataService.findTeam(id);
+        setTeam(foundTeam || null);
+      } catch (error) {
+        console.error("Error fetching team:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeam();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!team) {
     return (
@@ -21,6 +49,15 @@ const TeamDetails = () => {
       </div>
     );
   }
+
+  const contestData = team.contests
+    .filter(contest => contest.position)
+    .map(contest => ({
+      year: contest.year,
+      contest: contest.name,
+      position: contest.position!,
+      contestId: contest.contestId
+    }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,6 +110,11 @@ const TeamDetails = () => {
                         {contest.name}
                       </h4>
                       <p className="text-sm text-gray-600">{contest.year}</p>
+                      {contest.position && (
+                        <p className="text-sm font-medium text-blue-600">
+                          Position: {contest.position}
+                        </p>
+                      )}
                     </Link>
                   </div>
                 ))}
@@ -80,6 +122,15 @@ const TeamDetails = () => {
             </CardContent>
           </Card>
         </div>
+
+        {contestData.length > 0 && (
+          <div className="mt-8">
+            <ContestPerformance 
+              contests={contestData} 
+              title="Team Contest Performance" 
+            />
+          </div>
+        )}
       </div>
     </div>
   );

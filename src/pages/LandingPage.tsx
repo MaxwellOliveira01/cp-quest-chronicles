@@ -17,7 +17,7 @@ const LandingPage = () => {
     {
       title: "Search Universities",
       description: "Explore universities and their participants",
-      icon: GraduationCap,
+      icon: GraduationCat,
       path: "/search/university"
     },
     {
@@ -50,7 +50,7 @@ const LandingPage = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/admin/login")}
+              onClick={() => navigate("/admin")}
               className="text-gray-400 hover:text-gray-600"
             >
               <Settings className="w-4 h-4" />
