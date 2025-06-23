@@ -1,7 +1,8 @@
 export interface ProfileSearchModel {
     id: string;
+    name: string;
     handle: string;
-    university: UniversitySearchModel;
+    university?: UniversitySearchModel;
 }
 
 export interface UniversitySearchModel {
@@ -20,7 +21,7 @@ export interface TeamSearchModel {
 export interface ContestSearchModel {
     id: string;
     name: string;
-    year: string;
+    year: number;
 }
 
 export interface EventSearchModel {
@@ -34,10 +35,7 @@ export interface ContestPerformanceModel {
     contest: ContestSearchModel;
 }
 
-export interface ProfileFullModel {
-    id: string;
-    handle: string;
-    university?: UniversitySearchModel;
+export interface ProfileFullModel extends ProfileSearchModel {
     teams: TeamSearchModel[];
     events: EventSearchModel[];
     contests: ContestPerformanceModel[];
