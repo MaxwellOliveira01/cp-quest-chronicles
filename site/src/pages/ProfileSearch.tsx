@@ -4,22 +4,32 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { mockProfiles } from "@/data/mockData";
+import { dataService } from "@/services/dataService";
+import type { ProfileModel } from "../../../api/profile";
 
 const ProfileSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<typeof mockProfiles>([]);
+  const [results, setResults] = useState<ProfileModel[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = (value: string) => {
+  const handleSearch = async (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-      const filtered = mockProfiles.filter(
-        profile => 
-          profile.name.toLowerCase().includes(value.toLowerCase()) ||
-          profile.handle.toLowerCase().includes(value.toLowerCase())
-      );
-      setResults(filtered);
+      setLoading(true);
+      try {
+        const profiles = await dataService.getProfiles();
+        const filtered = profiles.filter(
+          profile => 
+            profile.name.toLowerCase().includes(value.toLowerCase()) ||
+            profile.handle.toLowerCase().includes(value.toLowerCase())
+        );
+        setResults(filtered);
+      } catch (error) {
+        console.error("Error searching profiles:", error);
+      } finally {
+        setLoading(false);
+      }
     } else {
       setResults([]);
     }
@@ -57,7 +67,13 @@ const ProfileSearch = () => {
             />
           </div>
 
-          {results.length > 0 && (
+          {loading && (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          )}
+
+          {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
               {results.map((profile) => (
                 <Link
@@ -71,15 +87,7 @@ const ProfileSearch = () => {
                         {profile.name}
                       </h3>
                       <p className="text-gray-600">@{profile.handle}</p>
-                      <p className="text-sm text-gray-500">{profile.university}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        {profile.contests.length} contests
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {profile.teams.length} teams
-                      </p>
+                      <p className="text-sm text-gray-500">{profile.university.name}</p>
                     </div>
                   </div>
                 </Link>
@@ -87,7 +95,7 @@ const ProfileSearch = () => {
             </div>
           )}
 
-          {searchTerm && results.length === 0 && (
+          {!loading && searchTerm && results.length === 0 && (
             <div className="text-center py-8">
               <p className="text-gray-500">No profiles found matching "{searchTerm}"</p>
             </div>

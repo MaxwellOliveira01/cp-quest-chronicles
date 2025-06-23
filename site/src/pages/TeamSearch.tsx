@@ -1,14 +1,15 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { dataService, Team } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
+import type { TeamModel } from "../../../api/team";
 
 const TeamSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<Team[]>([]);
+  const [results, setResults] = useState<TeamModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,8 +21,7 @@ const TeamSearch = () => {
         const teams = await dataService.getTeams();
         const filtered = teams.filter(
           team => 
-            team.name.toLowerCase().includes(value.toLowerCase()) ||
-            team.university.toLowerCase().includes(value.toLowerCase())
+            team.name.toLowerCase().includes(value.toLowerCase())
         );
         setResults(filtered);
       } catch (error) {
@@ -51,7 +51,7 @@ const TeamSearch = () => {
               Search Teams
             </h1>
             <p className="text-gray-600">
-              Find competitive programming teams by name or university
+              Find competitive programming teams by name
             </p>
           </div>
 
@@ -85,18 +85,6 @@ const TeamSearch = () => {
                       <h3 className="font-semibold text-lg text-gray-900">
                         {team.name}
                       </h3>
-                      <p className="text-gray-600">{team.university}</p>
-                      <p className="text-sm text-gray-500">
-                        Members: {team.members.map(m => m.name).join(", ")}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        {team.members.length} members
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {team.contests.length} contests
-                      </p>
                     </div>
                   </div>
                 </Link>
