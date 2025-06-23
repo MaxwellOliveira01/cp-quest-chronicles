@@ -2,46 +2,37 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Eye, List } from "lucide-react";
+import { BarChart, List } from "lucide-react";
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-
-interface ContestData {
-  year: number;
-  contest: string;
-  position: number;
-  contestId: string;
-}
+import { ContestPerformanceModel } from "../../../api/models";
 
 interface ContestPerformanceProps {
-  contests: ContestData[];
+  contests: ContestPerformanceModel[];
   title?: string;
 }
 
 const ContestPerformance = ({ contests, title = "Contest Performance" }: ContestPerformanceProps) => {
   const [showChart, setShowChart] = useState(true);
 
-  // Group contests by year and create chart data
-  const contestsByYear = contests.reduce((acc, contest) => {
-    if (!acc[contest.year]) {
-      acc[contest.year] = [];
-    }
-    acc[contest.year].push(contest);
+  const resultsByYear = contests.reduce((acc, result) => {
+    acc[result.contest.year] ??= [];
+    acc[result.contest.year].push(result);
     return acc;
-  }, {} as Record<number, ContestData[]>);
+  }, {} as Record<number, ContestPerformanceModel[]>);
 
-  const chartData = Object.entries(contestsByYear).flatMap(([year, yearContests]) => 
-    yearContests.map((contest, index) => ({
+  const chartData = Object.entries(resultsByYear).flatMap(([year, yearResults]) => 
+    yearResults.map((result, index) => ({
       year: parseInt(year),
-      position: contest.position,
-      contest: contest.contest,
-      contestId: contest.contestId,
+      position: result.position,
+      contest: result.contest.name,
+      contestId: result.contest.id,
       yearIndex: index,
       color: `hsl(${(parseInt(year) - 2019) * 60}, 70%, 50%)`
     }))
   );
 
   // Sort contests by year for list view
-  const sortedContests = [...contests].sort((a, b) => a.year - b.year);
+  const sortedContests = [...contests].sort((a, b) => a.contest.year - b.contest.year);
 
   const getMedalIcon = (position: number) => {
     if (position >= 1 && position <= 4) {
@@ -105,18 +96,18 @@ const ContestPerformance = ({ contests, title = "Contest Performance" }: Contest
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedContests.map((contest, index) => (
+            {sortedContests.map((result, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div>
-                  <h4 className="font-semibold text-blue-600">{contest.contest}</h4>
-                  <p className="text-sm text-gray-600">{contest.year}</p>
+                  <h4 className="font-semibold text-blue-600">{result.contest.name}</h4>
+                  <p className="text-sm text-gray-600">{result.contest.year}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {getMedalIcon(contest.position) && (
-                    <span className="text-xl">{getMedalIcon(contest.position)}</span>
+                  {getMedalIcon(result.position) && (
+                    <span className="text-xl">{getMedalIcon(result.position)}</span>
                   )}
                   <span className="text-sm font-medium text-blue-600">
-                    Position: {contest.position}
+                    Position: {result.position}
                   </span>
                 </div>
               </div>
