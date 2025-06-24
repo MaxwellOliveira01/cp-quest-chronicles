@@ -49,8 +49,6 @@ const ContestDetails = () => {
     );
   }
 
-  // const problemKeys = Object.keys(contest.teams[0]?.problems || {});
-  
   // Generate consistent colors for each problem
   const problemColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
 
@@ -72,25 +70,25 @@ const ContestDetails = () => {
             <p className="text-gray-600">Contest Results</p>
             <div className="flex gap-4 mt-4">
               <Button 
-                onClick={() => window.open(contest.officialPageUrl, '_blank')}
+                onClick={() => window.open(contest.officialUrl, '_blank')}
                 className="flex items-center gap-2"
               >
                 <ExternalLink className="w-4 h-4" />
                 Official Page
               </Button>
               <Button 
-                variant={contest.problemsPdfUrl ? "default" : "secondary"}
-                disabled={!contest.problemsPdfUrl}
-                onClick={() => contest.problemsPdfUrl && window.open(contest.problemsPdfUrl, '_blank')}
+                variant={contest.problemsUrl ? "default" : "secondary"}
+                disabled={!contest.problemsUrl}
+                onClick={() => contest.problemsUrl && window.open(contest.problemsUrl, '_blank')}
                 className="flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Problems PDF
               </Button>
               <Button 
-                variant={contest.solutionsPdfUrl ? "default" : "secondary"}
-                disabled={!contest.solutionsPdfUrl}
-                onClick={() => contest.solutionsPdfUrl && window.open(contest.solutionsPdfUrl, '_blank')}
+                variant={contest.solutionsUrl ? "default" : "secondary"}
+                disabled={!contest.solutionsUrl}
+                onClick={() => contest.solutionsUrl && window.open(contest.solutionsUrl, '_blank')}
                 className="flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
@@ -138,7 +136,7 @@ const ContestDetails = () => {
                         {teamRanking.penalty}
                       </td>
                       {contest.problems.map((problem, problemIndex) => (
-                        <td key={index} className="border border-gray-300 px-4 py-3 text-center">
+                        <td key={problemIndex} className="border border-gray-300 px-4 py-3 text-center">
                           {teamRanking.submissions.find(s => s.problemId === problem.id) ? (
                             <div className="flex flex-col items-center gap-1">
                               <div 
@@ -148,8 +146,8 @@ const ContestDetails = () => {
                                 🎈
                               </div>
                               <div className="text-xs text-gray-600">
-                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id).tries} tries</div>
-                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id).penalty} min</div>
+                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id)?.tries} tries</div>
+                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id)?.penalty} min</div>
                               </div>
                             </div>
                           ) : (

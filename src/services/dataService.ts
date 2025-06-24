@@ -27,7 +27,7 @@ class DataService {
       id: profile.id,
       name: profile.name,
       handle: profile.handle,
-      university: profile.university,
+      university: { id: '', name: profile.university, location: '' },
       teams: [],
       events: [],
       contests: []
@@ -52,7 +52,7 @@ class DataService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: data.university,
+      university: { id: '', name: data.university, location: '' },
       teams: [],
       events: [],
       contests: []
@@ -71,7 +71,7 @@ class DataService {
       .insert({
         name: profile.name,
         handle: profile.handle,
-        university: profile.university
+        university: typeof profile.university === 'string' ? profile.university : profile.university.name
       })
       .select()
       .single();
@@ -82,7 +82,7 @@ class DataService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: data.university,
+      university: { id: '', name: data.university, location: '' },
       teams: [],
       events: [],
       contests: []
@@ -100,7 +100,7 @@ class DataService {
       .update({
         name: updates.name,
         handle: updates.handle,
-        university: updates.university
+        university: typeof updates.university === 'string' ? updates.university : updates.university?.name
       })
       .eq('id', id)
       .select()
@@ -112,7 +112,7 @@ class DataService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: data.university,
+      university: { id: '', name: data.university, location: '' },
       teams: [],
       events: [],
       contests: []
@@ -263,13 +263,25 @@ class DataService {
     
     if (error) throw error;
     
-    return data.map(team => ({
-      id: team.id,
-      name: team.name,
-      university: team.university,
-      members: team.members || [],
-      contests: team.contests || []
-    }));
+    return data.map(team => {
+      const members = Array.isArray(team.members) ? team.members as { id: string; name: string; profileId: string }[] : [];
+      const contests = Array.isArray(team.contests) ? team.contests as any[] : [];
+      
+      return {
+        id: team.id,
+        name: team.name,
+        university: { id: '', name: team.university, location: '' },
+        members: members,
+        contests: contests.map(c => ({
+          position: c.position || 1,
+          contest: {
+            id: c.contestId || c.id || '',
+            name: c.name || '',
+            year: c.year || new Date().getFullYear()
+          }
+        }))
+      };
+    });
   }
 
   async findTeam(id: string): Promise<TeamFullModel | undefined> {
@@ -286,12 +298,22 @@ class DataService {
     
     if (error || !data) return undefined;
     
+    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
+    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
+    
     return {
       id: data.id,
       name: data.name,
-      university: data.university,
-      members: data.members || [],
-      contests: data.contests || []
+      university: { id: '', name: data.university, location: '' },
+      members: members,
+      contests: contests.map(c => ({
+        position: c.position || 1,
+        contest: {
+          id: c.contestId || c.id || '',
+          name: c.name || '',
+          year: c.year || new Date().getFullYear()
+        }
+      }))
     };
   }
 
@@ -306,21 +328,36 @@ class DataService {
       .from('teams')
       .insert({
         name: team.name,
-        university: team.university,
+        university: typeof team.university === 'string' ? team.university : team.university.name,
         members: team.members,
-        contests: team.contests
+        contests: team.contests.map(c => ({
+          contestId: c.contest.id,
+          name: c.contest.name,
+          year: c.contest.year,
+          position: c.position
+        }))
       })
       .select()
       .single();
     
     if (error) throw error;
     
+    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
+    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
+    
     return {
       id: data.id,
       name: data.name,
-      university: data.university,
-      members: data.members || [],
-      contests: data.contests || []
+      university: { id: '', name: data.university, location: '' },
+      members: members,
+      contests: contests.map(c => ({
+        position: c.position || 1,
+        contest: {
+          id: c.contestId || c.id || '',
+          name: c.name || '',
+          year: c.year || new Date().getFullYear()
+        }
+      }))
     };
   }
 
@@ -334,9 +371,14 @@ class DataService {
       .from('teams')
       .update({
         name: updates.name,
-        university: updates.university,
+        university: typeof updates.university === 'string' ? updates.university : updates.university?.name,
         members: updates.members,
-        contests: updates.contests
+        contests: updates.contests?.map(c => ({
+          contestId: c.contest.id,
+          name: c.contest.name,
+          year: c.contest.year,
+          position: c.position
+        }))
       })
       .eq('id', id)
       .select()
@@ -344,12 +386,22 @@ class DataService {
     
     if (error || !data) return null;
     
+    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
+    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
+    
     return {
       id: data.id,
       name: data.name,
-      university: data.university,
-      members: data.members || [],
-      contests: data.contests || []
+      university: { id: '', name: data.university, location: '' },
+      members: members,
+      contests: contests.map(c => ({
+        position: c.position || 1,
+        contest: {
+          id: c.contestId || c.id || '',
+          name: c.name || '',
+          year: c.year || new Date().getFullYear()
+        }
+      }))
     };
   }
 
@@ -388,7 +440,9 @@ class DataService {
       problemsUrl: contest.problems_url,
       solutionsUrl: contest.solutions_url,
       problemCount: contest.problem_count,
-      teams: []
+      teams: [],
+      problems: [],
+      ranking: []
     }));
   }
 
@@ -414,15 +468,17 @@ class DataService {
       problemsUrl: data.problems_url,
       solutionsUrl: data.solutions_url,
       problemCount: data.problem_count,
-      teams: []
+      teams: [],
+      problems: [],
+      ranking: []
     };
   }
 
-  async addContest(contest: Omit<ContestFullModel, 'id' | 'teams'>): Promise<ContestFullModel> {
+  async addContest(contest: Omit<ContestFullModel, 'id' | 'teams' | 'problems' | 'ranking'>): Promise<ContestFullModel> {
     if (!USE_BACKEND) {
       await this.delay();
       const id = Math.random().toString(36).substr(2, 9);
-      return { ...contest, id, teams: [] };
+      return { ...contest, id, teams: [], problems: [], ranking: [] };
     }
     
     const { data, error } = await supabase
@@ -448,7 +504,9 @@ class DataService {
       problemsUrl: data.problems_url,
       solutionsUrl: data.solutions_url,
       problemCount: data.problem_count,
-      teams: []
+      teams: [],
+      problems: [],
+      ranking: []
     };
   }
 
@@ -482,7 +540,9 @@ class DataService {
       problemsUrl: data.problems_url,
       solutionsUrl: data.solutions_url,
       problemCount: data.problem_count,
-      teams: []
+      teams: [],
+      problems: [],
+      ranking: []
     };
   }
 
@@ -513,14 +573,23 @@ class DataService {
     
     if (error) throw error;
     
-    return data.map(event => ({
-      id: event.id,
-      name: event.name,
-      location: event.location,
-      startDate: event.start_date,
-      endDate: event.end_date,
-      participants: event.participants || []
-    }));
+    return data.map(event => {
+      const participants = Array.isArray(event.participants) ? event.participants as string[] : [];
+      
+      return {
+        id: event.id,
+        name: event.name,
+        location: event.location,
+        startDate: event.start_date,
+        endDate: event.end_date,
+        students: participants.map(p => ({
+          id: p,
+          name: p,
+          handle: p,
+          university: ''
+        }))
+      };
+    });
   }
 
   async findEvent(id: string): Promise<EventFullModel | undefined> {
@@ -537,13 +606,20 @@ class DataService {
     
     if (error || !data) return undefined;
     
+    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
+    
     return {
       id: data.id,
       name: data.name,
       location: data.location,
       startDate: data.start_date,
       endDate: data.end_date,
-      participants: data.participants || []
+      students: participants.map(p => ({
+        id: p,
+        name: p,
+        handle: p,
+        university: ''
+      }))
     };
   }
 
@@ -561,12 +637,14 @@ class DataService {
         location: event.location,
         start_date: event.startDate,
         end_date: event.endDate,
-        participants: event.participants
+        participants: event.students?.map(s => s.name) || []
       })
       .select()
       .single();
     
     if (error) throw error;
+    
+    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
     
     return {
       id: data.id,
@@ -574,7 +652,12 @@ class DataService {
       location: data.location,
       startDate: data.start_date,
       endDate: data.end_date,
-      participants: data.participants || []
+      students: participants.map(p => ({
+        id: p,
+        name: p,
+        handle: p,
+        university: ''
+      }))
     };
   }
 
@@ -591,7 +674,7 @@ class DataService {
         location: updates.location,
         start_date: updates.startDate,
         end_date: updates.endDate,
-        participants: updates.participants
+        participants: updates.students?.map(s => s.name) || []
       })
       .eq('id', id)
       .select()
@@ -599,13 +682,20 @@ class DataService {
     
     if (error || !data) return null;
     
+    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
+    
     return {
       id: data.id,
       name: data.name,
       location: data.location,
       startDate: data.start_date,
       endDate: data.end_date,
-      participants: data.participants || []
+      students: participants.map(p => ({
+        id: p,
+        name: p,
+        handle: p,
+        university: ''
+      }))
     };
   }
 

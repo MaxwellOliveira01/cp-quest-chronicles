@@ -15,13 +15,20 @@ class EventService {
       throw new Error('Failed to fetch events');
     }
     
+    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
+    
     return {
       id: data.id,
       name: data.name,
       location: data.location,
       startDate: data.start_date,
       endDate: data.end_date,
-      participants: data.participants || []
+      students: participants.map(p => ({
+        id: p,
+        name: p,
+        handle: p,
+        university: ''
+      }))
     };
   }
 

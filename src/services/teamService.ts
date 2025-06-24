@@ -15,12 +15,22 @@ class TeamService {
       throw new Error('Failed to fetch team');
     }
     
+    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
+    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
+    
     return {
       id: data.id,
       name: data.name,
-      university: data.university,
-      members: data.members || [],
-      contests: data.contests || []
+      university: { id: '', name: data.university, location: '' },
+      members: members,
+      contests: contests.map(c => ({
+        position: c.position || 1,
+        contest: {
+          id: c.contestId || c.id || '',
+          name: c.name || '',
+          year: c.year || new Date().getFullYear()
+        }
+      }))
     };
   }
 

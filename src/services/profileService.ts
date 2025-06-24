@@ -1,5 +1,5 @@
 
-import { ProfileFullModel, ProfileSearchModel } from "../../api/models";
+import { ProfileFullModel, ProfileSearchModel } from '../../api/models';
 import { supabase } from '@/integrations/supabase/client';
 
 class ProfileService {
@@ -19,7 +19,7 @@ class ProfileService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: data.university,
+      university: { id: '', name: data.university, location: '' },
       teams: [],
       events: [],
       contests: []

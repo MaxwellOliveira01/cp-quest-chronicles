@@ -33,16 +33,13 @@ export interface EventSearchModel {
     endDate: string;
 }
 
-export interface EventFullModel extends EventSearchModel {
-    participants: string[];
-}
-
 export interface ContestPerformanceModel {
     position: number;
     contest: ContestSearchModel;
 }
 
 export interface ProfileFullModel extends ProfileSearchModel {
+    university: UniversitySearchModel;
     teams: TeamSearchModel[];
     events: EventSearchModel[];
     contests: ContestPerformanceModel[];
@@ -60,36 +57,13 @@ export interface UniversityFullModel {
 export interface TeamFullModel {
     id: string;
     name: string;
-    university: string;
-    members: { name: string; profileId: string }[];
-    contests: {
-        contestId: string;
-        name: string;
-        year: number;
-        problems?: Record<string, {
-            solved: boolean;
-            submissions?: number;
-            timeMinutes?: number;
-        }>;
-    }[];
+    university: UniversitySearchModel;
+    members: { id: string; name: string; profileId: string }[];
+    contests: ContestPerformanceModel[];
 }
 
-export interface ContestFullModel {
-    id: string;
-    name: string;
-    year: number;
-    officialUrl: string;
-    problemsUrl?: string | null;
-    solutionsUrl?: string | null;
-    problemCount: number;
-    teams: string[];
-}
-
-export interface TeamResultModel {
-    team: TeamSearchModel;
-    position: number;
-    penalty: number;
-    submissions: SubmissionModel[];
+export interface EventFullModel extends EventSearchModel {
+    students: ProfileSearchModel[];
 }
 
 export interface SubmissionModel {
@@ -103,6 +77,26 @@ export interface ProblemSearchModel {
     id: string;
     name: string;
     label: string;
+}
+
+export interface TeamResultModel {
+    team: TeamSearchModel;
+    position: number;
+    penalty: number;
+    submissions: SubmissionModel[];
+}
+
+export interface ContestFullModel {
+    id: string;
+    name: string;
+    year: number;
+    officialUrl: string;
+    problemsUrl?: string | null;
+    solutionsUrl?: string | null;
+    problemCount: number;
+    teams: string[];
+    problems: ProblemSearchModel[];
+    ranking: TeamResultModel[];
 }
 
 export interface ProblemFullModel extends ProblemSearchModel {

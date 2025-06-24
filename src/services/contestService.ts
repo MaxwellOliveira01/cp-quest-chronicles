@@ -23,7 +23,13 @@ class ContestService {
       problemsUrl: data.problems_url,
       solutionsUrl: data.solutions_url,
       problemCount: data.problem_count,
-      teams: []
+      teams: [],
+      problems: [
+        { id: 'A', name: 'Problem A', label: 'A' },
+        { id: 'B', name: 'Problem B', label: 'B' },
+        { id: 'C', name: 'Problem C', label: 'C' }
+      ],
+      ranking: []
     };
   }
 

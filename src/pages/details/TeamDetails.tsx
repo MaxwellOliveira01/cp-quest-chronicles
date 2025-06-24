@@ -67,7 +67,7 @@ const TeamDetails = () => {
           <CardHeader>
             <CardTitle className="text-3xl">{team.name}</CardTitle>
             {team.university && (
-              <p className="text-xl text-gray-600">{team.university.name}</p>
+              <p className="text-xl text-gray-600">{typeof team.university === 'string' ? team.university : team.university.name}</p>
             )}
             <p className="text-gray-500">Team Profile</p>
           </CardHeader>
@@ -82,7 +82,7 @@ const TeamDetails = () => {
               <div className="space-y-3">
                 {team.members.map((member, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/profile/${member.id}`}>
+                    <Link to={`/profile/${member.profileId || member.id}`}>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
                     </Link>
                   </div>
