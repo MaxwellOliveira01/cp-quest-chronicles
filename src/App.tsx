@@ -41,12 +41,12 @@ const App = () => (
           <Route path="/contest/:id" element={<ContestDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
           <Route path="/event/:id" element={<EventDetails />} />
-          {/* <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/profiles" element={<AdminProfiles />} />
           <Route path="/admin/universities" element={<AdminUniversities />} />
           <Route path="/admin/events" element={<AdminEvents />} />
           <Route path="/admin/teams" element={<AdminTeams />} />
-          <Route path="/admin/contests" element={<AdminContests />} /> */}
+          <Route path="/admin/contests" element={<AdminContests />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
