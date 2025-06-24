@@ -6,18 +6,6 @@ import { Loader2 } from "lucide-react";
 import { dataService } from "@/services/dataService";
 import type { TeamFullModel, ProfileFullModel, UniversityFullModel, ContestFullModel } from "../../../api/models";
 
-interface ContestParticipation {
-  contestId: string;
-  name: string;
-  year: number;
-  position: number;
-  problems?: Record<string, {
-    solved: boolean;
-    submissions?: number;
-    timeMinutes?: number;
-  }>;
-}
-
 interface TeamFormProps {
   isOpen: boolean;
   editingTeam: TeamFullModel | null;
@@ -30,9 +18,8 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     name: "",
     university: "",
     members: [] as string[],
-    contests: [] as ContestParticipation[]
+    contests: [] as { contestId: string; position: number }[]
   });
-  const [selectedContestForProblems, setSelectedContestForProblems] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<ProfileFullModel[]>([]);
   const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
   const [contests, setContests] = useState<ContestFullModel[]>([]);
@@ -72,8 +59,6 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
         members: editingTeam.members.map(m => m.profileId),
         contests: editingTeam.contests.map(c => ({
           contestId: c.contest.id,
-          name: c.contest.name,
-          year: c.contest.year,
           position: c.position
         }))
       });
@@ -85,7 +70,6 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
         contests: []
       });
     }
-    setSelectedContestForProblems(null);
   }, [editingTeam, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,17 +77,24 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     
     const selectedMembers = formData.members.map(memberId => {
       const profile = profiles.find(p => p.id === memberId);
-      return { id: memberId, name: profile?.name || "", profileId: memberId };
+      return { 
+        id: memberId, 
+        name: profile?.name || "", 
+        profileId: memberId 
+      };
     });
     
-    const contestPerformances = formData.contests.map(c => ({
-      position: c.position || 1,
-      contest: {
-        id: c.contestId,
-        name: c.name,
-        year: c.year
-      }
-    }));
+    const contestPerformances = formData.contests.map(c => {
+      const contest = contests.find(contest => contest.id === c.contestId);
+      return {
+        position: c.position,
+        contest: {
+          id: c.contestId,
+          name: contest?.name || '',
+          year: contest?.year || new Date().getFullYear()
+        }
+      };
+    });
     
     try {
       if (editingTeam) {
@@ -144,39 +135,18 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
   };
 
   const handleContestToggle = (contestId: string) => {
-    const contest = contests.find(c => c.id === contestId);
-    if (!contest) return;
-
     const isSelected = formData.contests.some(c => c.contestId === contestId);
     
     if (isSelected) {
       const updatedContests = formData.contests.filter(c => c.contestId !== contestId);
       setFormData({ ...formData, contests: updatedContests });
     } else {
-      const newContest: ContestParticipation = {
-        contestId: contest.id,
-        name: contest.name,
-        year: contest.year,
-        position: 1,
-        problems: {}
+      const newContest = {
+        contestId,
+        position: 1
       };
       setFormData({ ...formData, contests: [...formData.contests, newContest] });
     }
-  };
-
-  const handleProblemChange = (contestId: string, problemKey: string, field: string, value: any) => {
-    const updatedContests = formData.contests.map(contest => {
-      if (contest.contestId === contestId) {
-        const updatedProblems = { ...contest.problems };
-        if (!updatedProblems[problemKey]) {
-          updatedProblems[problemKey] = { solved: false };
-        }
-        updatedProblems[problemKey] = { ...updatedProblems[problemKey], [field]: value };
-        return { ...contest, problems: updatedProblems };
-      }
-      return contest;
-    });
-    setFormData({ ...formData, contests: updatedContests });
   };
 
   const handlePositionChange = (contestId: string, position: number) => {
@@ -187,10 +157,6 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
       return contest;
     });
     setFormData({ ...formData, contests: updatedContests });
-  };
-
-  const generateProblemKeys = (count: number) => {
-    return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
   };
 
   if (!isOpen) return null;
@@ -224,6 +190,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
               required
             />
           </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               University
@@ -242,6 +209,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
               ))}
             </select>
           </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Team Members (max 3)
@@ -261,7 +229,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
                       className="rounded"
                     />
                     <span className={`text-sm ${!canSelect ? 'text-gray-400' : ''}`}>
-                      {profile.name} ({profile.handle}) - {profile.university}
+                      {profile.name} ({profile.handle}) - {profile.university || 'No university'}
                     </span>
                   </label>
                 );
@@ -269,6 +237,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
             </div>
             <p className="text-xs text-gray-500 mt-1">Selected: {formData.members.length}/3</p>
           </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Contests Participated
@@ -287,69 +256,16 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
                   </label>
                   {formData.contests.some(c => c.contestId === contest.id) && (
                     <div className="mt-2 ml-6">
-                      <div className="mb-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Position
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={formData.contests.find(c => c.contestId === contest.id)?.position || 1}
-                          onChange={(e) => handlePositionChange(contest.id, parseInt(e.target.value) || 1)}
-                          className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedContestForProblems(
-                          selectedContestForProblems === contest.id ? null : contest.id
-                        )}
-                      >
-                        {selectedContestForProblems === contest.id ? 'Hide' : 'Show'} Problems
-                      </Button>
-                      {selectedContestForProblems === contest.id && (
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          {generateProblemKeys(contest.problemCount).map(problemKey => {
-                            const contestParticipation = formData.contests.find(c => c.contestId === contest.id);
-                            const problem = contestParticipation?.problems?.[problemKey] || { solved: false };
-                            
-                            return (
-                              <div key={problemKey} className="border border-gray-200 p-2 rounded">
-                                <div className="font-medium text-sm">Problem {problemKey}</div>
-                                <label className="flex items-center space-x-1 mt-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={problem.solved}
-                                    onChange={(e) => handleProblemChange(contest.id, problemKey, 'solved', e.target.checked)}
-                                    className="rounded"
-                                  />
-                                  <span className="text-xs">Solved</span>
-                                </label>
-                                {problem.solved && (
-                                  <>
-                                    <input
-                                      type="number"
-                                      placeholder="Submissions"
-                                      value={problem.submissions || ''}
-                                      onChange={(e) => handleProblemChange(contest.id, problemKey, 'submissions', parseInt(e.target.value) || 0)}
-                                      className="w-full mt-1 px-2 py-1 text-xs border border-gray-300 rounded"
-                                    />
-                                    <input
-                                      type="number"
-                                      placeholder="Time (minutes)"
-                                      value={problem.timeMinutes || ''}
-                                      onChange={(e) => handleProblemChange(contest.id, problemKey, 'timeMinutes', parseInt(e.target.value) || 0)}
-                                      className="w-full mt-1 px-2 py-1 text-xs border border-gray-300 rounded"
-                                    />
-                                  </>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Position
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.contests.find(c => c.contestId === contest.id)?.position || 1}
+                        onChange={(e) => handlePositionChange(contest.id, parseInt(e.target.value) || 1)}
+                        className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
+                      />
                     </div>
                   )}
                 </div>
@@ -357,6 +273,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
             </div>
             <p className="text-xs text-gray-500 mt-1">Selected: {formData.contests.length} contests</p>
           </div>
+          
           <div className="flex gap-4">
             <Button type="submit" disabled={formData.members.length === 0}>
               {editingTeam ? 'Update' : 'Create'} Team

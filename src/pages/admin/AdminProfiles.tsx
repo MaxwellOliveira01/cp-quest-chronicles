@@ -159,7 +159,6 @@ const AdminProfiles = () => {
                     value={formData.university}
                     onChange={(e) => setFormData({ ...formData, university: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
                   >
                     <option value="">Select University</option>
                     {universities.map((university) => (
@@ -201,7 +200,7 @@ const AdminProfiles = () => {
                   <div>
                     <h3 className="font-semibold">{profile.name}</h3>
                     <p className="text-sm text-gray-600">@{profile.handle}</p>
-                    <p className="text-sm text-gray-600">{profile.university}</p>
+                    <p className="text-sm text-gray-600">{profile.university || 'No university'}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button

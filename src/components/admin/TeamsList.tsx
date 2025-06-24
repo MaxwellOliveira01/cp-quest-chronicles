@@ -22,9 +22,9 @@ export const TeamsList = ({ teams, onEdit, onDelete }: TeamsListProps) => {
             <div key={team.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
                 <h3 className="font-semibold">{team.name}</h3>
-                <p className="text-sm text-gray-600">{team.university}</p>
+                <p className="text-sm text-gray-600">{team.university || 'No university'}</p>
                 <p className="text-sm text-gray-600">
-                  Members: {team.members.map(m => m.name).join(", ")}
+                  Members: {team.members.map(m => m.name).join(", ") || 'No members'}
                 </p>
                 <p className="text-sm text-gray-600">{team.contests.length} contests</p>
               </div>

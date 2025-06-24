@@ -5,31 +5,63 @@ import { supabase } from '@/integrations/supabase/client';
 class ContestService {
 
   async get(id: string): Promise<ContestFullModel> {
-    const { data, error } = await supabase
+    // Get contest data
+    const { data: contestData, error: contestError } = await supabase
       .from('contests')
       .select('*')
       .eq('id', id)
       .single();
     
-    if (error) {
+    if (contestError) {
       throw new Error('Failed to fetch contest');
+    }
+
+    // Get team performances for this contest
+    const { data: teamPerformances, error: teamError } = await supabase
+      .from('contest_performances')
+      .select(`
+        position,
+        teams (
+          id,
+          name,
+          universities (
+            name
+          )
+        )
+      `)
+      .eq('contest_id', id)
+      .not('team_id', 'is', null)
+      .order('position');
+
+    if (teamError) {
+      throw new Error('Failed to fetch team performances');
     }
     
     return {
-      id: data.id,
-      name: data.name,
-      year: data.year,
-      officialUrl: data.official_url,
-      problemsUrl: data.problems_url,
-      solutionsUrl: data.solutions_url,
-      problemCount: data.problem_count,
-      teams: [],
-      problems: [
-        { id: 'A', name: 'Problem A', label: 'A' },
-        { id: 'B', name: 'Problem B', label: 'B' },
-        { id: 'C', name: 'Problem C', label: 'C' }
-      ],
-      ranking: []
+      id: contestData.id,
+      name: contestData.name,
+      year: contestData.year,
+      officialUrl: contestData.official_url,
+      problemsUrl: contestData.problems_url,
+      solutionsUrl: contestData.solutions_url,
+      problemCount: contestData.problem_count,
+      teams: teamPerformances?.map(tp => tp.teams.id) || [],
+      problems: Array.from({ length: contestData.problem_count }, (_, i) => ({
+        id: String.fromCharCode(65 + i),
+        name: `Problem ${String.fromCharCode(65 + i)}`,
+        label: String.fromCharCode(65 + i)
+      })),
+      ranking: teamPerformances?.map(tp => ({
+        team: {
+          id: tp.teams.id,
+          name: tp.teams.name,
+          university: tp.teams.universities?.name || '',
+          members: []
+        },
+        position: tp.position,
+        penalty: 0,
+        submissions: []
+      })) || []
     };
   }
 

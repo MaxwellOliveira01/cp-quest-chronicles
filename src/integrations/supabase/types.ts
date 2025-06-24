@@ -9,6 +9,55 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contest_performances: {
+        Row: {
+          contest_id: string
+          created_at: string | null
+          id: string
+          position: number
+          profile_id: string | null
+          team_id: string | null
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string | null
+          id?: string
+          position: number
+          profile_id?: string | null
+          team_id?: string | null
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string | null
+          id?: string
+          position?: number
+          profile_id?: string | null
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_performances_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_performances_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_performances_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contests: {
         Row: {
           created_at: string | null
@@ -52,7 +101,6 @@ export type Database = {
           id: string
           location: string
           name: string
-          participants: Json | null
           start_date: string
           updated_at: string | null
         }
@@ -62,7 +110,6 @@ export type Database = {
           id?: string
           location: string
           name: string
-          participants?: Json | null
           start_date: string
           updated_at?: string | null
         }
@@ -72,11 +119,46 @@ export type Database = {
           id?: string
           location?: string
           name?: string
-          participants?: Json | null
           start_date?: string
           updated_at?: string | null
         }
         Relationships: []
+      }
+      profile_events: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -84,7 +166,7 @@ export type Database = {
           handle: string
           id: string
           name: string
-          university: string
+          university_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -92,7 +174,7 @@ export type Database = {
           handle: string
           id?: string
           name: string
-          university: string
+          university_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -100,40 +182,116 @@ export type Database = {
           handle?: string
           id?: string
           name?: string
-          university?: string
+          university_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_id: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teams: {
         Row: {
-          contests: Json | null
           created_at: string | null
           id: string
-          members: Json | null
+          member1_id: string | null
+          member2_id: string | null
+          member3_id: string | null
           name: string
-          university: string
+          university_id: string | null
           updated_at: string | null
         }
         Insert: {
-          contests?: Json | null
           created_at?: string | null
           id?: string
-          members?: Json | null
+          member1_id?: string | null
+          member2_id?: string | null
+          member3_id?: string | null
           name: string
-          university: string
+          university_id?: string | null
           updated_at?: string | null
         }
         Update: {
-          contests?: Json | null
           created_at?: string | null
           id?: string
-          members?: Json | null
+          member1_id?: string | null
+          member2_id?: string | null
+          member3_id?: string | null
           name?: string
-          university?: string
+          university_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teams_member1_id_fkey"
+            columns: ["member1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_member2_id_fkey"
+            columns: ["member2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_member3_id_fkey"
+            columns: ["member3_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       universities: {
         Row: {

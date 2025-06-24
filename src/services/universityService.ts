@@ -4,23 +4,83 @@ import { supabase } from '@/integrations/supabase/client';
 
 class UniversityService {
   async get(id: string): Promise<UniversityFullModel> {
-    const { data, error } = await supabase
+    // Get university data
+    const { data: universityData, error: universityError } = await supabase
       .from('universities')
       .select('*')
       .eq('id', id)
       .single();
     
-    if (error) {
+    if (universityError) {
       throw new Error('Failed to fetch university');
     }
+
+    // Get students from this university
+    const { data: students, error: studentsError } = await supabase
+      .from('profiles')
+      .select('id, name, handle')
+      .eq('university_id', id);
+
+    if (studentsError) {
+      throw new Error('Failed to fetch students');
+    }
+
+    // Get teams from this university
+    const { data: teams, error: teamsError } = await supabase
+      .from('teams')
+      .select('id, name')
+      .eq('university_id', id);
+
+    if (teamsError) {
+      throw new Error('Failed to fetch teams');
+    }
+
+    // Get contests that teams from this university participated in
+    const { data: contestData, error: contestsError } = await supabase
+      .from('contest_performances')
+      .select(`
+        contests (
+          id,
+          name,
+          year
+        )
+      `)
+      .in('team_id', teams?.map(t => t.id) || []);
+
+    if (contestsError) {
+      throw new Error('Failed to fetch contests');
+    }
+
+    // Remove duplicates from contests
+    const uniqueContests = contestData?.reduce((acc, curr) => {
+      const existing = acc.find(c => c.id === curr.contests.id);
+      if (!existing) {
+        acc.push({
+          id: curr.contests.id,
+          name: curr.contests.name,
+          year: curr.contests.year
+        });
+      }
+      return acc;
+    }, [] as any[]) || [];
     
     return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      students: [],
-      teams: [],
-      contests: []
+      id: universityData.id,
+      name: universityData.name,
+      location: universityData.location,
+      students: students?.map(s => ({
+        id: s.id,
+        name: s.name,
+        handle: s.handle,
+        university: universityData.name
+      })) || [],
+      teams: teams?.map(t => ({
+        id: t.id,
+        name: t.name,
+        university: universityData.name,
+        members: []
+      })) || [],
+      contests: uniqueContests
     };
   }
 

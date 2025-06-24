@@ -1,150 +1,102 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { ProfileFullModel, UniversityFullModel, TeamFullModel, ContestFullModel, EventFullModel } from '../../api/models';
-
-const USE_BACKEND = true; // Toggle between mock data and real backend
+import { 
+  ProfileFullModel, 
+  UniversityFullModel, 
+  TeamFullModel, 
+  EventFullModel, 
+  ContestFullModel 
+} from '../../api/models';
 
 class DataService {
-  private async delay(): Promise<void> {
-    const randomDelay = 0;
-    return new Promise(resolve => setTimeout(resolve, randomDelay));
-  }
 
-  // Profiles
+  // Profile CRUD operations
   async getProfiles(): Promise<ProfileFullModel[]> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return [];
-    }
-    
     const { data, error } = await supabase
       .from('profiles')
-      .select('*');
+      .select(`
+        *,
+        universities (
+          name
+        )
+      `);
     
-    if (error) throw error;
+    if (error) throw new Error('Failed to fetch profiles');
     
     return data.map(profile => ({
       id: profile.id,
       name: profile.name,
       handle: profile.handle,
-      university: profile.university,
+      university: profile.universities?.name || '',
       teams: [],
       events: [],
       contests: []
     }));
   }
 
-  async findProfile(id: string): Promise<ProfileFullModel | undefined> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return undefined;
+  async addProfile(profile: Omit<ProfileFullModel, 'id'>): Promise<void> {
+    // Find university by name
+    let universityId = null;
+    if (profile.university) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', profile.university)
+        .single();
+      universityId = university?.id;
     }
-    
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error || !data) return undefined;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      handle: data.handle,
-      university: data.university,
-      teams: [],
-      events: [],
-      contests: []
-    };
-  }
 
-  async addProfile(profile: Omit<ProfileFullModel, 'id'>): Promise<ProfileFullModel> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      const id = Math.random().toString(36).substr(2, 9);
-      return { ...profile, id };
-    }
-    
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('profiles')
       .insert({
         name: profile.name,
         handle: profile.handle,
-        university: profile.university
-      })
-      .select()
-      .single();
+        university_id: universityId
+      });
     
-    if (error) throw error;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      handle: data.handle,
-      university: data.university,
-      teams: [],
-      events: [],
-      contests: []
-    };
+    if (error) throw new Error('Failed to add profile');
   }
 
-  async updateProfile(id: string, updates: Partial<ProfileFullModel>): Promise<ProfileFullModel | null> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return null;
+  async updateProfile(id: string, profile: Partial<ProfileFullModel>): Promise<void> {
+    // Find university by name if provided
+    let universityId = null;
+    if (profile.university) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', profile.university)
+        .single();
+      universityId = university?.id;
     }
-    
-    const { data, error } = await supabase
+
+    const { error } = await supabase
       .from('profiles')
       .update({
-        name: updates.name,
-        handle: updates.handle,
-        university: updates.university
+        name: profile.name,
+        handle: profile.handle,
+        university_id: universityId
       })
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
     
-    if (error || !data) return null;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      handle: data.handle,
-      university: data.university,
-      teams: [],
-      events: [],
-      contests: []
-    };
+    if (error) throw new Error('Failed to update profile');
   }
 
-  async deleteProfile(id: string): Promise<boolean> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return true;
-    }
-    
+  async deleteProfile(id: string): Promise<void> {
     const { error } = await supabase
       .from('profiles')
       .delete()
       .eq('id', id);
     
-    return !error;
+    if (error) throw new Error('Failed to delete profile');
   }
 
-  // Universities
+  // University CRUD operations
   async getUniversities(): Promise<UniversityFullModel[]> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return [];
-    }
-    
     const { data, error } = await supabase
       .from('universities')
       .select('*');
     
-    if (error) throw error;
+    if (error) throw new Error('Failed to fetch universities');
     
     return data.map(university => ({
       id: university.id,
@@ -156,281 +108,302 @@ class DataService {
     }));
   }
 
-  async findUniversity(id: string): Promise<UniversityFullModel | undefined> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return undefined;
-    }
-    
-    const { data, error } = await supabase
-      .from('universities')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error || !data) return undefined;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      students: [],
-      teams: [],
-      contests: []
-    };
-  }
-
-  async addUniversity(university: Omit<UniversityFullModel, 'id' | 'students' | 'teams' | 'contests'>): Promise<UniversityFullModel> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      const id = Math.random().toString(36).substr(2, 9);
-      return { ...university, id, students: [], teams: [], contests: [] };
-    }
-    
-    const { data, error } = await supabase
+  async addUniversity(university: Omit<UniversityFullModel, 'id' | 'students' | 'teams' | 'contests'>): Promise<void> {
+    const { error } = await supabase
       .from('universities')
       .insert({
         name: university.name,
         location: university.location
-      })
-      .select()
-      .single();
+      });
     
-    if (error) throw error;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      students: [],
-      teams: [],
-      contests: []
-    };
+    if (error) throw new Error('Failed to add university');
   }
 
-  async updateUniversity(id: string, updates: Partial<UniversityFullModel>): Promise<UniversityFullModel | null> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return null;
-    }
-    
-    const { data, error } = await supabase
+  async updateUniversity(id: string, university: Partial<UniversityFullModel>): Promise<void> {
+    const { error } = await supabase
       .from('universities')
       .update({
-        name: updates.name,
-        location: updates.location
+        name: university.name,
+        location: university.location
       })
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
     
-    if (error || !data) return null;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      students: [],
-      teams: [],
-      contests: []
-    };
+    if (error) throw new Error('Failed to update university');
   }
 
-  async deleteUniversity(id: string): Promise<boolean> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return true;
-    }
-    
+  async deleteUniversity(id: string): Promise<void> {
     const { error } = await supabase
       .from('universities')
       .delete()
       .eq('id', id);
     
-    return !error;
+    if (error) throw new Error('Failed to delete university');
   }
 
-  // Teams
+  // Team CRUD operations
   async getTeams(): Promise<TeamFullModel[]> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return [];
-    }
-    
     const { data, error } = await supabase
       .from('teams')
-      .select('*');
+      .select(`
+        *,
+        universities (
+          name
+        )
+      `);
     
-    if (error) throw error;
+    if (error) throw new Error('Failed to fetch teams');
     
-    return data.map(team => {
-      const members = Array.isArray(team.members) ? team.members as { id: string; name: string; profileId: string }[] : [];
-      const contests = Array.isArray(team.contests) ? team.contests as any[] : [];
-      
-      return {
-        id: team.id,
-        name: team.name,
-        university: team.university,
-        members: members,
-        contests: contests.map(c => ({
-          position: c.position || 1,
-          contest: {
-            id: c.contestId || c.id || '',
-            name: c.name || '',
-            year: c.year || new Date().getFullYear()
-          }
-        }))
-      };
-    });
+    return data.map(team => ({
+      id: team.id,
+      name: team.name,
+      university: team.universities?.name || '',
+      members: [],
+      contests: []
+    }));
   }
 
-  async findTeam(id: string): Promise<TeamFullModel | undefined> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return undefined;
+  async addTeam(team: Omit<TeamFullModel, 'id'>): Promise<void> {
+    // Find university by name
+    let universityId = null;
+    if (team.university) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', team.university)
+        .single();
+      universityId = university?.id;
     }
-    
-    const { data, error } = await supabase
-      .from('teams')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error || !data) return undefined;
-    
-    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
-    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
-    
-    return {
-      id: data.id,
-      name: data.name,
-      university: data.university,
-      members: members,
-      contests: contests.map(c => ({
-        position: c.position || 1,
-        contest: {
-          id: c.contestId || c.id || '',
-          name: c.name || '',
-          year: c.year || new Date().getFullYear()
-        }
-      }))
-    };
-  }
 
-  async addTeam(team: Omit<TeamFullModel, 'id'>): Promise<TeamFullModel> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      const id = Math.random().toString(36).substr(2, 9);
-      return { ...team, id };
-    }
-    
-    const { data, error } = await supabase
+    // Insert team
+    const { data: newTeam, error: teamError } = await supabase
       .from('teams')
       .insert({
         name: team.name,
-        university: team.university,
-        members: team.members,
-        contests: team.contests.map(c => ({
-          contestId: c.contest.id,
-          name: c.contest.name,
-          year: c.contest.year,
-          position: c.position
-        }))
+        university_id: universityId,
+        member1_id: team.members[0]?.profileId || null,
+        member2_id: team.members[1]?.profileId || null,
+        member3_id: team.members[2]?.profileId || null
       })
       .select()
       .single();
     
-    if (error) throw error;
-    
-    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
-    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
-    
-    return {
-      id: data.id,
-      name: data.name,
-      university: data.university,
-      members: members,
-      contests: contests.map(c => ({
-        position: c.position || 1,
-        contest: {
-          id: c.contestId || c.id || '',
-          name: c.name || '',
-          year: c.year || new Date().getFullYear()
-        }
-      }))
-    };
+    if (teamError) throw new Error('Failed to add team');
+
+    // Add team members to junction table
+    if (team.members.length > 0) {
+      const teamMemberships = team.members.map(member => ({
+        team_id: newTeam.id,
+        profile_id: member.profileId
+      }));
+
+      const { error: membersError } = await supabase
+        .from('team_members')
+        .insert(teamMemberships);
+      
+      if (membersError) throw new Error('Failed to add team members');
+    }
+
+    // Add contest performances
+    if (team.contests.length > 0) {
+      const performances = team.contests.map(contest => ({
+        contest_id: contest.contest.id,
+        team_id: newTeam.id,
+        position: contest.position
+      }));
+
+      const { error: contestsError } = await supabase
+        .from('contest_performances')
+        .insert(performances);
+      
+      if (contestsError) throw new Error('Failed to add contest performances');
+    }
   }
 
-  async updateTeam(id: string, updates: Partial<TeamFullModel>): Promise<TeamFullModel | null> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return null;
+  async updateTeam(id: string, team: Partial<TeamFullModel>): Promise<void> {
+    // Find university by name if provided
+    let universityId = null;
+    if (team.university) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', team.university)
+        .single();
+      universityId = university?.id;
     }
-    
-    const { data, error } = await supabase
+
+    // Update team basic info
+    const { error: teamError } = await supabase
       .from('teams')
       .update({
-        name: updates.name,
-        university: updates.university,
-        members: updates.members,
-        contests: updates.contests?.map(c => ({
-          contestId: c.contest.id,
-          name: c.contest.name,
-          year: c.contest.year,
-          position: c.position
-        }))
+        name: team.name,
+        university_id: universityId,
+        member1_id: team.members?.[0]?.profileId || null,
+        member2_id: team.members?.[1]?.profileId || null,
+        member3_id: team.members?.[2]?.profileId || null
       })
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
     
-    if (error || !data) return null;
-    
-    const members = Array.isArray(data.members) ? data.members as { id: string; name: string; profileId: string }[] : [];
-    const contests = Array.isArray(data.contests) ? data.contests as any[] : [];
-    
-    return {
-      id: data.id,
-      name: data.name,
-      university: data.university,
-      members: members,
-      contests: contests.map(c => ({
-        position: c.position || 1,
-        contest: {
-          id: c.contestId || c.id || '',
-          name: c.name || '',
-          year: c.year || new Date().getFullYear()
-        }
-      }))
-    };
+    if (teamError) throw new Error('Failed to update team');
+
+    // Update team members - delete existing and add new ones
+    if (team.members) {
+      // Delete existing memberships
+      await supabase
+        .from('team_members')
+        .delete()
+        .eq('team_id', id);
+
+      // Add new memberships
+      if (team.members.length > 0) {
+        const teamMemberships = team.members.map(member => ({
+          team_id: id,
+          profile_id: member.profileId
+        }));
+
+        const { error: membersError } = await supabase
+          .from('team_members')
+          .insert(teamMemberships);
+        
+        if (membersError) throw new Error('Failed to update team members');
+      }
+    }
+
+    // Update contest performances
+    if (team.contests) {
+      // Delete existing performances
+      await supabase
+        .from('contest_performances')
+        .delete()
+        .eq('team_id', id);
+
+      // Add new performances
+      if (team.contests.length > 0) {
+        const performances = team.contests.map(contest => ({
+          contest_id: contest.contest.id,
+          team_id: id,
+          position: contest.position
+        }));
+
+        const { error: contestsError } = await supabase
+          .from('contest_performances')
+          .insert(performances);
+        
+        if (contestsError) throw new Error('Failed to update contest performances');
+      }
+    }
   }
 
-  async deleteTeam(id: string): Promise<boolean> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return true;
-    }
-    
+  async deleteTeam(id: string): Promise<void> {
     const { error } = await supabase
       .from('teams')
       .delete()
       .eq('id', id);
     
-    return !error;
+    if (error) throw new Error('Failed to delete team');
   }
 
-  // Contests
-  async getContests(): Promise<ContestFullModel[]> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return [];
-    }
+  // Event CRUD operations
+  async getEvents(): Promise<EventFullModel[]> {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*');
     
+    if (error) throw new Error('Failed to fetch events');
+    
+    return data.map(event => ({
+      id: event.id,
+      name: event.name,
+      location: event.location,
+      startDate: event.start_date,
+      endDate: event.end_date,
+      students: []
+    }));
+  }
+
+  async addEvent(event: Omit<EventFullModel, 'id'>): Promise<void> {
+    // Insert event
+    const { data: newEvent, error: eventError } = await supabase
+      .from('events')
+      .insert({
+        name: event.name,
+        location: event.location,
+        start_date: event.startDate,
+        end_date: event.endDate
+      })
+      .select()
+      .single();
+    
+    if (eventError) throw new Error('Failed to add event');
+
+    // Add event participants
+    if (event.students.length > 0) {
+      const participations = event.students.map(student => ({
+        event_id: newEvent.id,
+        profile_id: student.id
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('profile_events')
+        .insert(participations);
+      
+      if (participantsError) throw new Error('Failed to add event participants');
+    }
+  }
+
+  async updateEvent(id: string, event: Partial<EventFullModel>): Promise<void> {
+    // Update event basic info
+    const { error: eventError } = await supabase
+      .from('events')
+      .update({
+        name: event.name,
+        location: event.location,
+        start_date: event.startDate,
+        end_date: event.endDate
+      })
+      .eq('id', id);
+    
+    if (eventError) throw new Error('Failed to update event');
+
+    // Update participants
+    if (event.students) {
+      // Delete existing participants
+      await supabase
+        .from('profile_events')
+        .delete()
+        .eq('event_id', id);
+
+      // Add new participants
+      if (event.students.length > 0) {
+        const participations = event.students.map(student => ({
+          event_id: id,
+          profile_id: student.id
+        }));
+
+        const { error: participantsError } = await supabase
+          .from('profile_events')
+          .insert(participations);
+        
+        if (participantsError) throw new Error('Failed to update event participants');
+      }
+    }
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw new Error('Failed to delete event');
+  }
+
+  // Contest CRUD operations
+  async getContests(): Promise<ContestFullModel[]> {
     const { data, error } = await supabase
       .from('contests')
       .select('*');
     
-    if (error) throw error;
+    if (error) throw new Error('Failed to fetch contests');
     
     return data.map(contest => ({
       id: contest.id,
@@ -446,42 +419,8 @@ class DataService {
     }));
   }
 
-  async findContest(id: string): Promise<ContestFullModel | undefined> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return undefined;
-    }
-    
-    const { data, error } = await supabase
-      .from('contests')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error || !data) return undefined;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      year: data.year,
-      officialUrl: data.official_url,
-      problemsUrl: data.problems_url,
-      solutionsUrl: data.solutions_url,
-      problemCount: data.problem_count,
-      teams: [],
-      problems: [],
-      ranking: []
-    };
-  }
-
-  async addContest(contest: Omit<ContestFullModel, 'id' | 'teams' | 'problems' | 'ranking'>): Promise<ContestFullModel> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      const id = Math.random().toString(36).substr(2, 9);
-      return { ...contest, id, teams: [], problems: [], ranking: [] };
-    }
-    
-    const { data, error } = await supabase
+  async addContest(contest: Omit<ContestFullModel, 'id' | 'teams' | 'problems' | 'ranking'>): Promise<void> {
+    const { error } = await supabase
       .from('contests')
       .insert({
         name: contest.name,
@@ -490,237 +429,35 @@ class DataService {
         problems_url: contest.problemsUrl,
         solutions_url: contest.solutionsUrl,
         problem_count: contest.problemCount
-      })
-      .select()
-      .single();
+      });
     
-    if (error) throw error;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      year: data.year,
-      officialUrl: data.official_url,
-      problemsUrl: data.problems_url,
-      solutionsUrl: data.solutions_url,
-      problemCount: data.problem_count,
-      teams: [],
-      problems: [],
-      ranking: []
-    };
+    if (error) throw new Error('Failed to add contest');
   }
 
-  async updateContest(id: string, updates: Partial<ContestFullModel>): Promise<ContestFullModel | null> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return null;
-    }
-    
-    const { data, error } = await supabase
+  async updateContest(id: string, contest: Partial<ContestFullModel>): Promise<void> {
+    const { error } = await supabase
       .from('contests')
       .update({
-        name: updates.name,
-        year: updates.year,
-        official_url: updates.officialUrl,
-        problems_url: updates.problemsUrl,
-        solutions_url: updates.solutionsUrl,
-        problem_count: updates.problemCount
+        name: contest.name,
+        year: contest.year,
+        official_url: contest.officialUrl,
+        problems_url: contest.problemsUrl,
+        solutions_url: contest.solutionsUrl,
+        problem_count: contest.problemCount
       })
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
     
-    if (error || !data) return null;
-    
-    return {
-      id: data.id,
-      name: data.name,
-      year: data.year,
-      officialUrl: data.official_url,
-      problemsUrl: data.problems_url,
-      solutionsUrl: data.solutions_url,
-      problemCount: data.problem_count,
-      teams: [],
-      problems: [],
-      ranking: []
-    };
+    if (error) throw new Error('Failed to update contest');
   }
 
-  async deleteContest(id: string): Promise<boolean> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return true;
-    }
-    
+  async deleteContest(id: string): Promise<void> {
     const { error } = await supabase
       .from('contests')
       .delete()
       .eq('id', id);
     
-    return !error;
-  }
-
-  // Events
-  async getEvents(): Promise<EventFullModel[]> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return [];
-    }
-    
-    const { data, error } = await supabase
-      .from('events')
-      .select('*');
-    
-    if (error) throw error;
-    
-    return data.map(event => {
-      const participants = Array.isArray(event.participants) ? event.participants as string[] : [];
-      
-      return {
-        id: event.id,
-        name: event.name,
-        location: event.location,
-        startDate: event.start_date,
-        endDate: event.end_date,
-        students: participants.map(p => ({
-          id: p,
-          name: p,
-          handle: p,
-          university: ''
-        }))
-      };
-    });
-  }
-
-  async findEvent(id: string): Promise<EventFullModel | undefined> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return undefined;
-    }
-    
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error || !data) return undefined;
-    
-    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
-    
-    return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      students: participants.map(p => ({
-        id: p,
-        name: p,
-        handle: p,
-        university: ''
-      }))
-    };
-  }
-
-  async addEvent(event: Omit<EventFullModel, 'id'>): Promise<EventFullModel> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      const id = Math.random().toString(36).substr(2, 9);
-      return { ...event, id };
-    }
-    
-    const { data, error } = await supabase
-      .from('events')
-      .insert({
-        name: event.name,
-        location: event.location,
-        start_date: event.startDate,
-        end_date: event.endDate,
-        participants: event.students?.map(s => s.name) || []
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    
-    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
-    
-    return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      students: participants.map(p => ({
-        id: p,
-        name: p,
-        handle: p,
-        university: ''
-      }))
-    };
-  }
-
-  async updateEvent(id: string, updates: Partial<EventFullModel>): Promise<EventFullModel | null> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return null;
-    }
-    
-    const { data, error } = await supabase
-      .from('events')
-      .update({
-        name: updates.name,
-        location: updates.location,
-        start_date: updates.startDate,
-        end_date: updates.endDate,
-        participants: updates.students?.map(s => s.name) || []
-      })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error || !data) return null;
-    
-    const participants = Array.isArray(data.participants) ? data.participants as string[] : [];
-    
-    return {
-      id: data.id,
-      name: data.name,
-      location: data.location,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      students: participants.map(p => ({
-        id: p,
-        name: p,
-        handle: p,
-        university: ''
-      }))
-    };
-  }
-
-  async deleteEvent(id: string): Promise<boolean> {
-    if (!USE_BACKEND) {
-      await this.delay();
-      return true;
-    }
-    
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', id);
-    
-    return !error;
+    if (error) throw new Error('Failed to delete contest');
   }
 }
 
 export const dataService = new DataService();
-
-// Re-export types from api/models
-export type {
-  ProfileFullModel as Profile,
-  UniversityFullModel as University,
-  TeamFullModel as Team,
-  ContestFullModel as Contest,
-  EventFullModel as Event
-} from '../../api/models';
