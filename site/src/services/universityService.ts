@@ -1,28 +1,20 @@
+import { UniversityFullModel, UniversitySearchModel } from "../../../api/models";
 
-import { BaseService } from './baseService';
-import type { UniversityModel } from '../../../api/university';
-
-class UniversityService extends BaseService<UniversityModel> {
-  constructor() {
-    super();
-    this.initializeData();
+class UniversityService {
+  async get(id: string): Promise<UniversityFullModel> {
+    const response = await fetch(`/api/profile/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch profile');
+    }
+    return response.json();
   }
 
-  private initializeData() {
-    this.setItems([
-      {
-        id: 1,
-        name: "MIT"
-      },
-      {
-        id: 2,
-        name: "Stanford University"
-      },
-      {
-        id: 3,
-        name: "Carnegie Mellon University"
-      }
-    ]);
+  async list(prefix: string): Promise<UniversitySearchModel[]> {
+    const response = await fetch(`/api/profile?prefix=${encodeURIComponent(prefix)}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch profiles');
+    }
+    return response.json();
   }
 }
 

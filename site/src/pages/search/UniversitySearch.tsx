@@ -2,23 +2,30 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { mockUniversities } from "@/data/mockData";
+import { universityService } from "@/services/universityService";
+import { UniversitySearchModel } from "../../../../api/models";
 
 const UniversitySearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<typeof mockUniversities>([]);
+  const [results, setResults] = useState<UniversitySearchModel[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = (value: string) => {
+  const handleSearch = async (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-      const filtered = mockUniversities.filter(
-        university => 
-          university.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setResults(filtered);
+
+      try {
+        const universities = await universityService.list(value);
+        setResults(universities);
+      } catch (error) {
+        console.error("Error searching universities:", error);
+      } finally {
+        setLoading(false);
+      }
+
     } else {
       setResults([]);
     }
@@ -56,7 +63,13 @@ const UniversitySearch = () => {
             />
           </div>
 
-          {results.length > 0 && (
+          {loading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          )}
+
+          {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
               {results.map((university) => (
                 <Link
@@ -70,12 +83,7 @@ const UniversitySearch = () => {
                         {university.name}
                       </h3>
                       <p className="text-gray-600">
-                        {university.students.length} students
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        {university.contests.length} contests participated
+                        {university.location}
                       </p>
                     </div>
                   </div>

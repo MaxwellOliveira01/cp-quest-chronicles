@@ -4,13 +4,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { dataService, University, Contest } from "@/services/dataService";
+import { universityService } from "@/services/universityService";
+import { UniversityFullModel } from "../../../../api/models";
 
 const UniversityDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [university, setUniversity] = useState<University | null>(null);
-  const [contests, setContests] = useState<Contest[]>([]);
+  const [university, setUniversity] = useState<UniversityFullModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,13 +18,8 @@ const UniversityDetails = () => {
       if (!id) return;
       
       try {
-        const [foundUniversity, contestsData] = await Promise.all([
-          dataService.findUniversity(id),
-          dataService.getContests()
-        ]);
-        
-        setUniversity(foundUniversity || null);
-        setContests(contestsData);
+        const university = await universityService.get(id);
+        setUniversity(university);
       } catch (error) {
         console.error("Error fetching university details:", error);
       } finally {
@@ -82,7 +77,7 @@ const UniversityDetails = () => {
               <div className="space-y-3">
                 {university.students.map((student, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/profile/${student.profileId}`}>
+                    <Link to={`/profile/${student.id}`}>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">
                         {student.name}
                       </h4>
@@ -99,21 +94,17 @@ const UniversityDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {university.contests.map((contestName, index) => {
-                  const contest = contests.find(c => c.name === contestName);
+                {university.contests.map((contest, index) => {
                   return (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       {contest ? (
                         <Link to={`/contest/${contest.id}`}>
                           <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                            {contestName}
+                            {contest.name}
                           </h4>
-                          <p className="text-sm text-gray-600">
-                            {contest.teams.length} teams participated
-                          </p>
                         </Link>
                       ) : (
-                        <h4 className="font-semibold">{contestName}</h4>
+                        <h4 className="font-semibold">{contest.name}</h4>
                       )}
                     </div>
                   );

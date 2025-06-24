@@ -1,15 +1,14 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { dataService } from "@/services/dataService";
-import type { ProfileModel } from "../../../api/profile";
+import { TeamSearchModel } from "../../../../api/models";
+import { teamService } from "@/services/teamService";
 
-const ProfileSearch = () => {
+const TeamSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<ProfileModel[]>([]);
+  const [results, setResults] = useState<TeamSearchModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -18,15 +17,10 @@ const ProfileSearch = () => {
     if (value.length > 0) {
       setLoading(true);
       try {
-        const profiles = await dataService.getProfiles();
-        const filtered = profiles.filter(
-          profile => 
-            profile.name.toLowerCase().includes(value.toLowerCase()) ||
-            profile.handle.toLowerCase().includes(value.toLowerCase())
-        );
-        setResults(filtered);
+        const teams = await teamService.list(value);
+        setResults(teams);
       } catch (error) {
-        console.error("Error searching profiles:", error);
+        console.error("Error searching teams:", error);
       } finally {
         setLoading(false);
       }
@@ -49,10 +43,10 @@ const ProfileSearch = () => {
               Back to Home
             </Button>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Search Profiles
+              Search Teams
             </h1>
             <p className="text-gray-600">
-              Find competitive programmers by name or handle
+              Find competitive programming teams by name
             </p>
           </div>
 
@@ -60,7 +54,7 @@ const ProfileSearch = () => {
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search for profiles..."
+              placeholder="Search for teams..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 py-3 text-lg"
@@ -69,25 +63,23 @@ const ProfileSearch = () => {
 
           {loading && (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <Loader2 className="w-8 h-8 animate-spin" />
             </div>
           )}
 
           {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-              {results.map((profile) => (
+              {results.map((team) => (
                 <Link
-                  key={profile.id}
-                  to={`/profile/${profile.id}`}
+                  key={team.id}
+                  to={`/team/${team.id}`}
                   className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {profile.name}
+                        {team.name}
                       </h3>
-                      <p className="text-gray-600">@{profile.handle}</p>
-                      <p className="text-sm text-gray-500">{profile.university.name}</p>
                     </div>
                   </div>
                 </Link>
@@ -97,7 +89,7 @@ const ProfileSearch = () => {
 
           {!loading && searchTerm && results.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No profiles found matching "{searchTerm}"</p>
+              <p className="text-gray-500">No teams found matching "{searchTerm}"</p>
             </div>
           )}
         </div>
@@ -106,4 +98,4 @@ const ProfileSearch = () => {
   );
 };
 
-export default ProfileSearch;
+export default TeamSearch;

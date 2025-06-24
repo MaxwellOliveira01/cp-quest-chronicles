@@ -4,12 +4,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, ExternalLink, Download, Loader2 } from "lucide-react";
-import { dataService, Contest } from "@/services/dataService";
+import { contestService } from "@/services/contestService";
+import { ContestFullModel } from "../../../../api/models";
 
 const ContestDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [contest, setContest] = useState<Contest | null>(null);
+  const [contest, setContest] = useState<ContestFullModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,8 +18,8 @@ const ContestDetails = () => {
       if (!id) return;
       
       try {
-        const foundContest = await dataService.findContest(id);
-        setContest(foundContest || null);
+        const foundContest = await contestService.get(id);
+        setContest(foundContest);
       } catch (error) {
         console.error("Error fetching contest:", error);
       } finally {
@@ -48,7 +49,7 @@ const ContestDetails = () => {
     );
   }
 
-  const problemKeys = Object.keys(contest.teams[0]?.problems || {});
+  // const problemKeys = Object.keys(contest.teams[0]?.problems || {});
   
   // Generate consistent colors for each problem
   const problemColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
@@ -71,25 +72,25 @@ const ContestDetails = () => {
             <p className="text-gray-600">Contest Results</p>
             <div className="flex gap-4 mt-4">
               <Button 
-                onClick={() => window.open(contest.officialUrl, '_blank')}
+                onClick={() => window.open(contest.officialPageUrl, '_blank')}
                 className="flex items-center gap-2"
               >
                 <ExternalLink className="w-4 h-4" />
                 Official Page
               </Button>
               <Button 
-                variant={contest.problemsUrl ? "default" : "secondary"}
-                disabled={!contest.problemsUrl}
-                onClick={() => contest.problemsUrl && window.open(contest.problemsUrl, '_blank')}
+                variant={contest.problemsPdfUrl ? "default" : "secondary"}
+                disabled={!contest.problemsPdfUrl}
+                onClick={() => contest.problemsPdfUrl && window.open(contest.problemsPdfUrl, '_blank')}
                 className="flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Problems PDF
               </Button>
               <Button 
-                variant={contest.solutionsUrl ? "default" : "secondary"}
-                disabled={!contest.solutionsUrl}
-                onClick={() => contest.solutionsUrl && window.open(contest.solutionsUrl, '_blank')}
+                variant={contest.solutionsPdfUrl ? "default" : "secondary"}
+                disabled={!contest.solutionsPdfUrl}
+                onClick={() => contest.solutionsPdfUrl && window.open(contest.solutionsPdfUrl, '_blank')}
                 className="flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
@@ -111,34 +112,34 @@ const ContestDetails = () => {
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Rank</th>
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Team Name</th>
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Penalty</th>
-                    {problemKeys.map((problem, index) => (
-                      <th key={problem} className="border border-gray-300 px-4 py-3 text-center font-semibold">
+                    {contest.problems.map((problem, index) => (
+                      <th key={index} className="border border-gray-300 px-4 py-3 text-center font-semibold">
                         <div className="flex items-center justify-center gap-2">
                           <div 
                             className="w-4 h-4 rounded-full" 
                             style={{ backgroundColor: problemColors[index % problemColors.length] }}
                           ></div>
-                          Problem {problem}
+                          Problem {problem.label}
                         </div>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {contest.teams.map((team, index) => (
+                  {contest.ranking.map((teamRanking, index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="border border-gray-300 px-4 py-3 font-semibold">
                         {index + 1}
                       </td>
                       <td className="border border-gray-300 px-4 py-3 font-medium">
-                        {team.name}
+                        {teamRanking.team.name}
                       </td>
                       <td className="border border-gray-300 px-4 py-3">
-                        {team.penalty}
+                        {teamRanking.penalty}
                       </td>
-                      {problemKeys.map((problem, problemIndex) => (
-                        <td key={problem} className="border border-gray-300 px-4 py-3 text-center">
-                          {team.problems[problem]?.solved ? (
+                      {contest.problems.map((problem, problemIndex) => (
+                        <td key={index} className="border border-gray-300 px-4 py-3 text-center">
+                          {teamRanking.submissions.find(s => s.problemId === problem.id) ? (
                             <div className="flex flex-col items-center gap-1">
                               <div 
                                 className="text-2xl"
@@ -147,8 +148,8 @@ const ContestDetails = () => {
                                 🎈
                               </div>
                               <div className="text-xs text-gray-600">
-                                <div>{team.problems[problem].submissions} tries</div>
-                                <div>{team.problems[problem].timeMinutes}min</div>
+                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id).tries} tries</div>
+                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id).penalty} min</div>
                               </div>
                             </div>
                           ) : (

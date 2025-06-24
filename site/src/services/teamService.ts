@@ -1,29 +1,24 @@
 
-import { BaseService } from './baseService';
-import type { TeamModel } from '../../../api/team';
+import { TeamFullModel, TeamSearchModel } from '../../../api/models';
 
-class TeamService extends BaseService<TeamModel> {
-  constructor() {
-    super();
-    this.initializeData();
+class TeamService {
+
+  async get(id: string): Promise<TeamFullModel> {
+    const response = await fetch(`/api/team/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch team');
+    }
+    return response.json();
   }
 
-  private initializeData() {
-    this.setItems([
-      {
-        id: 1,
-        name: "MIT Thunder"
-      },
-      {
-        id: 2,
-        name: "Stanford Cardinals"
-      },
-      {
-        id: 3,
-        name: "CMU Tartans"
-      }
-    ]);
+  async list(prefix: string): Promise<TeamSearchModel[]> {
+    const response = await fetch(`/api/team?prefix=${encodeURIComponent(prefix)}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch teams');
+    }
+    return response.json();
   }
+  
 }
 
 export const teamService = new TeamService();

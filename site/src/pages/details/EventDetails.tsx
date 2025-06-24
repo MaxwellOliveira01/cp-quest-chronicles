@@ -4,13 +4,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, MapPin, Calendar, Loader2 } from "lucide-react";
-import { dataService, Event, Profile } from "@/services/dataService";
+import { EventFullModel } from "../../../../api/models";
+import { eventService } from "@/services/eventService";
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [participants, setParticipants] = useState<Profile[]>([]);
+  const [event, setEvent] = useState<EventFullModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,18 +18,8 @@ const EventDetails = () => {
       if (!id) return;
       
       try {
-        const foundEvent = await dataService.findEvent(id);
-        if (foundEvent) {
-          setEvent(foundEvent);
-          
-          // Get participant profiles
-          const participantProfiles = await Promise.all(
-            foundEvent.participants.map(participantId => 
-              dataService.findProfile(participantId)
-            )
-          );
-          setParticipants(participantProfiles.filter(Boolean) as Profile[]);
-        }
+        const foundEvent = await eventService.get(id);
+        setEvent(foundEvent);
       } catch (error) {
         console.error("Error fetching event details:", error);
       } finally {
@@ -93,15 +83,18 @@ const EventDetails = () => {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {participants.map((participant, index) => (
+              {event.students.map((student, index) => (
                 <div key={index} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <Link to={`/profile/${participant.id}`}>
+                  <Link to={`/profile/${student.id}`}>
                     <div>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                        {participant.name}
+                        {student.name}
                       </h4>
-                      <p className="text-sm text-gray-600">@{participant.handle}</p>
-                      <p className="text-sm text-gray-500">{participant.university}</p>
+                      <p className="text-sm text-gray-600">@{student.handle}</p>
+
+                      {student.university && (
+                        <p className="text-sm text-gray-500">{student.university.name}</p>
+                      )}
                     </div>
                   </Link>
                 </div>

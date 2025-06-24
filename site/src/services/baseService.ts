@@ -6,7 +6,7 @@ export abstract class BaseService<T extends { id: number }> {
     return this.items;
   }
 
-  findById(id: string): T | undefined {
+  findById(id: string): T {
     return this.items.find(item => item.id === parseInt(id));
   }
 

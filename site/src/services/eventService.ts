@@ -1,29 +1,23 @@
+import { EventFullModel, EventSearchModel } from "../../../api/models";
 
-import { BaseService } from './baseService';
-import type { EventModel } from '../../../api/events';
+class EventService {
 
-class EventService extends BaseService<EventModel> {
-  constructor() {
-    super();
-    this.initializeData();
+  async get(id: string): Promise<EventFullModel> {
+    const response = await fetch(`/api/event/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch events');
+    }
+    return response.json();
   }
 
-  private initializeData() {
-    this.setItems([
-      {
-        id: 1,
-        name: "ICPC World Finals 2023",
-        year: 2023,
-        location: "Dhaka, Bangladesh"
-      },
-      {
-        id: 2,
-        name: "Programming Bootcamp 2022",
-        year: 2022,
-        location: "San Francisco, CA"
-      }
-    ]);
+  async list(prefix: string): Promise<EventSearchModel[]> {
+    const response = await fetch(`/api/events?prefix=${encodeURIComponent(prefix)}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch events');
+    }
+    return response.json();
   }
+  
 }
 
 export const eventService = new EventService();

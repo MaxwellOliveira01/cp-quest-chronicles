@@ -4,13 +4,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { dataService, Team } from "@/services/dataService";
 import ContestPerformance from "@/components/ContestPerformance";
+import { TeamFullModel } from "../../../../api/models";
+import { teamService } from "@/services/teamService";
 
 const TeamDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [team, setTeam] = useState<Team | null>(null);
+  const [team, setTeam] = useState<TeamFullModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,8 +20,8 @@ const TeamDetails = () => {
       
       setLoading(true);
       try {
-        const foundTeam = await dataService.findTeam(id);
-        setTeam(foundTeam || null);
+        const foundTeam = await teamService.get(id);
+        setTeam(foundTeam);
       } catch (error) {
         console.error("Error fetching team:", error);
       } finally {
@@ -50,15 +51,6 @@ const TeamDetails = () => {
     );
   }
 
-  const contestData = team.contests
-    .filter(contest => contest.position)
-    .map(contest => ({
-      year: contest.year,
-      contest: contest.name,
-      position: contest.position!,
-      contestId: contest.contestId
-    }));
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -74,7 +66,9 @@ const TeamDetails = () => {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-3xl">{team.name}</CardTitle>
-            <p className="text-xl text-gray-600">{team.university}</p>
+            {team.university && (
+              <p className="text-xl text-gray-600">{team.university.name}</p>
+            )}
             <p className="text-gray-500">Team Profile</p>
           </CardHeader>
         </Card>
@@ -88,7 +82,7 @@ const TeamDetails = () => {
               <div className="space-y-3">
                 {team.members.map((member, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/profile/${member.profileId}`}>
+                    <Link to={`/profile/${member.id}`}>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
                     </Link>
                   </div>
@@ -103,18 +97,16 @@ const TeamDetails = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {team.contests.map((contest, index) => (
+                {team.contests.map((performance, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/contest/${contest.contestId}`}>
+                    <Link to={`/contest/${performance.contest.id}`}>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                        {contest.name}
+                        {performance.contest.name}
                       </h4>
-                      <p className="text-sm text-gray-600">{contest.year}</p>
-                      {contest.position && (
-                        <p className="text-sm font-medium text-blue-600">
-                          Position: {contest.position}
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-600">{performance.contest.year}</p>
+                      <p className="text-sm font-medium text-blue-600">
+                        Position: {performance.position}
+                      </p>
                     </Link>
                   </div>
                 ))}
@@ -123,10 +115,10 @@ const TeamDetails = () => {
           </Card>
         </div>
 
-        {contestData.length > 0 && (
+        {team.contests.length > 0 && (
           <div className="mt-8">
             <ContestPerformance 
-              contests={contestData} 
+              contests={team.contests} 
               title="Team Contest Performance" 
             />
           </div>
