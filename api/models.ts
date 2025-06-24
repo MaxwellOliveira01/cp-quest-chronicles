@@ -28,6 +28,12 @@ export interface EventSearchModel {
     id: string;
     name: string;
     location: string;
+    startDate: string; // maybe it should be on fullModel?
+    endDate: string;
+}
+
+export interface EventFullModel extends EventSearchModel {
+    students: ProfileSearchModel[];
 }
 
 export interface ContestPerformanceModel {
@@ -62,10 +68,11 @@ export interface ContestFullModel {
     id: string;
     name: string;
     year: string;
-    officialPageUrl: string;
-    problemsPdfUrl: string; // TODO: Remover Url
-    solutionsPdfUrl: string; // TODO: Remover Url
+    officialPageUrl?: string;
+    problemsPdfUrl?: string; // TODO: Remover Url
+    solutionsPdfUrl?: string; // TODO: Remover Url
     ranking: TeamResultModel[];
+    problems: ProblemFullModel[];
 }
 
 export interface TeamResultModel {
