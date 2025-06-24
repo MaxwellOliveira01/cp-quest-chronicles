@@ -19,7 +19,7 @@ class ProfileService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       teams: [],
       events: [],
       contests: []

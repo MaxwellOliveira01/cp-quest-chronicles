@@ -27,7 +27,7 @@ class DataService {
       id: profile.id,
       name: profile.name,
       handle: profile.handle,
-      university: { id: '', name: profile.university, location: '' },
+      university: profile.university,
       teams: [],
       events: [],
       contests: []
@@ -52,18 +52,18 @@ class DataService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       teams: [],
       events: [],
       contests: []
     };
   }
 
-  async addProfile(profile: Omit<ProfileFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<ProfileFullModel> {
+  async addProfile(profile: Omit<ProfileFullModel, 'id'>): Promise<ProfileFullModel> {
     if (!USE_BACKEND) {
       await this.delay();
       const id = Math.random().toString(36).substr(2, 9);
-      return { ...profile, id, teams: [], events: [], contests: [] };
+      return { ...profile, id };
     }
     
     const { data, error } = await supabase
@@ -71,7 +71,7 @@ class DataService {
       .insert({
         name: profile.name,
         handle: profile.handle,
-        university: typeof profile.university === 'string' ? profile.university : profile.university.name
+        university: profile.university
       })
       .select()
       .single();
@@ -82,7 +82,7 @@ class DataService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       teams: [],
       events: [],
       contests: []
@@ -100,7 +100,7 @@ class DataService {
       .update({
         name: updates.name,
         handle: updates.handle,
-        university: typeof updates.university === 'string' ? updates.university : updates.university?.name
+        university: updates.university
       })
       .eq('id', id)
       .select()
@@ -112,7 +112,7 @@ class DataService {
       id: data.id,
       name: data.name,
       handle: data.handle,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       teams: [],
       events: [],
       contests: []
@@ -270,7 +270,7 @@ class DataService {
       return {
         id: team.id,
         name: team.name,
-        university: { id: '', name: team.university, location: '' },
+        university: team.university,
         members: members,
         contests: contests.map(c => ({
           position: c.position || 1,
@@ -304,7 +304,7 @@ class DataService {
     return {
       id: data.id,
       name: data.name,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       members: members,
       contests: contests.map(c => ({
         position: c.position || 1,
@@ -328,7 +328,7 @@ class DataService {
       .from('teams')
       .insert({
         name: team.name,
-        university: typeof team.university === 'string' ? team.university : team.university.name,
+        university: team.university,
         members: team.members,
         contests: team.contests.map(c => ({
           contestId: c.contest.id,
@@ -348,7 +348,7 @@ class DataService {
     return {
       id: data.id,
       name: data.name,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       members: members,
       contests: contests.map(c => ({
         position: c.position || 1,
@@ -371,7 +371,7 @@ class DataService {
       .from('teams')
       .update({
         name: updates.name,
-        university: typeof updates.university === 'string' ? updates.university : updates.university?.name,
+        university: updates.university,
         members: updates.members,
         contests: updates.contests?.map(c => ({
           contestId: c.contest.id,
@@ -392,7 +392,7 @@ class DataService {
     return {
       id: data.id,
       name: data.name,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       members: members,
       contests: contests.map(c => ({
         position: c.position || 1,

@@ -47,10 +47,7 @@ const AdminProfiles = () => {
         await dataService.updateProfile(editingProfile.id, {
           name: formData.name,
           handle: formData.handle,
-          university: formData.university,
-          teams: editingProfile.teams,
-          events: editingProfile.events,
-          contests: editingProfile.contests
+          university: formData.university
         });
       } else {
         await dataService.addProfile({

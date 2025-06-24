@@ -21,7 +21,7 @@ class TeamService {
     return {
       id: data.id,
       name: data.name,
-      university: { id: '', name: data.university, location: '' },
+      university: data.university,
       members: members,
       contests: contests.map(c => ({
         position: c.position || 1,

@@ -69,7 +69,7 @@ const ProfileDetails = () => {
               <CardHeader>
                 <CardTitle className="text-3xl">{profile.name}</CardTitle>
                 <p className="text-xl text-gray-600">@{profile.handle}</p>
-                <p className="text-gray-500">{typeof profile.university === 'string' ? profile.university : profile.university.name}</p>
+                <p className="text-gray-500">{profile.university}</p>
               </CardHeader>
             </Card>
 
