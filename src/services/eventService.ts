@@ -1,21 +1,48 @@
+
 import { EventFullModel, EventSearchModel } from "../../api/models";
+import { supabase } from '@/integrations/supabase/client';
 
 class EventService {
 
   async get(id: string): Promise<EventFullModel> {
-    const response = await fetch(`/api/event/${id}`);
-    if (!response.ok) {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
       throw new Error('Failed to fetch events');
     }
-    return response.json();
+    
+    return {
+      id: data.id,
+      name: data.name,
+      location: data.location,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      participants: data.participants || []
+    };
   }
 
   async list(prefix: string): Promise<EventSearchModel[]> {
-    const response = await fetch(`/api/events?prefix=${encodeURIComponent(prefix)}`);
-    if (!response.ok) {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .ilike('name', `%${prefix}%`)
+      .limit(10);
+    
+    if (error) {
       throw new Error('Failed to fetch events');
     }
-    return response.json();
+    
+    return data.map(event => ({
+      id: event.id,
+      name: event.name,
+      location: event.location,
+      startDate: event.start_date,
+      endDate: event.end_date
+    }));
   }
   
 }

@@ -3,16 +3,17 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Loader2 } from "lucide-react";
-import { dataService, Team } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
 import { TeamForm } from "@/components/admin/TeamForm";
 import { TeamsList } from "@/components/admin/TeamsList";
+import type { TeamFullModel } from "../../../api/models";
 
 const AdminTeams = () => {
   const navigate = useNavigate();
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<TeamFullModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editingTeam, setEditingTeam] = useState<TeamFullModel | null>(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -29,7 +30,6 @@ const AdminTeams = () => {
     fetchTeams();
   }, []);
 
-  // Refresh teams list whenever the form closes or team is saved
   const refreshTeams = async () => {
     try {
       const teamsData = await dataService.getTeams();
@@ -41,7 +41,7 @@ const AdminTeams = () => {
     }
   };
 
-  const handleEdit = (team: Team) => {
+  const handleEdit = (team: TeamFullModel) => {
     setEditingTeam(team);
     setIsFormOpen(true);
   };

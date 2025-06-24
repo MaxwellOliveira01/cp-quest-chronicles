@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit, Trash } from "lucide-react";
-import { Team } from "@/services/dataService";
+import type { TeamFullModel } from "../../../api/models";
 
 interface TeamsListProps {
-  teams: Team[];
-  onEdit: (team: Team) => void;
+  teams: TeamFullModel[];
+  onEdit: (team: TeamFullModel) => void;
   onDelete: (id: string) => void;
 }
 

@@ -4,17 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService, University } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
+import type { UniversityFullModel } from "../../../api/models";
 
 const AdminUniversities = () => {
   const navigate = useNavigate();
-  const [universities, setUniversities] = useState<University[]>([]);
+  const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingUniversity, setEditingUniversity] = useState<University | null>(null);
+  const [editingUniversity, setEditingUniversity] = useState<UniversityFullModel | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    contests: [] as string[]
+    location: ""
   });
 
   useEffect(() => {
@@ -42,27 +43,24 @@ const AdminUniversities = () => {
           ...formData
         });
       } else {
-        await dataService.addUniversity({
-          ...formData,
-          students: []
-        });
+        await dataService.addUniversity(formData);
       }
       
       const universitiesData = await dataService.getUniversities();
       setUniversities(universitiesData);
       setIsFormOpen(false);
       setEditingUniversity(null);
-      setFormData({ name: "", contests: [] });
+      setFormData({ name: "", location: "" });
     } catch (error) {
       console.error("Error saving university:", error);
     }
   };
 
-  const handleEdit = (university: University) => {
+  const handleEdit = (university: UniversityFullModel) => {
     setEditingUniversity(university);
     setFormData({
       name: university.name,
-      contests: university.contests
+      location: university.location
     });
     setIsFormOpen(true);
   };
@@ -126,6 +124,18 @@ const AdminUniversities = () => {
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
                 <div className="flex gap-4">
                   <Button type="submit">
                     {editingUniversity ? 'Update' : 'Create'} University
@@ -136,7 +146,7 @@ const AdminUniversities = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingUniversity(null);
-                      setFormData({ name: "", contests: [] });
+                      setFormData({ name: "", location: "" });
                     }}
                   >
                     Cancel
@@ -157,8 +167,7 @@ const AdminUniversities = () => {
                 <div key={university.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
                     <h3 className="font-semibold">{university.name}</h3>
-                    <p className="text-sm text-gray-600">{university.students.length} students</p>
-                    <p className="text-sm text-gray-600">{university.contests.length} contests</p>
+                    <p className="text-sm text-gray-600">{university.location}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button

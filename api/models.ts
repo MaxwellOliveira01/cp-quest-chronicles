@@ -1,8 +1,9 @@
+
 export interface ProfileSearchModel {
     id: string;
     name: string;
     handle: string;
-    university?: UniversitySearchModel;
+    university: string;
 }
 
 export interface UniversitySearchModel {
@@ -15,7 +16,7 @@ export interface TeamSearchModel {
     id: string;
     name: string;
     members: ProfileSearchModel[];
-    univesity?: UniversitySearchModel;
+    university: string;
 }
 
 export interface ContestSearchModel {
@@ -28,12 +29,12 @@ export interface EventSearchModel {
     id: string;
     name: string;
     location: string;
-    startDate: string; // maybe it should be on fullModel?
+    startDate: string;
     endDate: string;
 }
 
 export interface EventFullModel extends EventSearchModel {
-    students: ProfileSearchModel[];
+    participants: string[];
 }
 
 export interface ContestPerformanceModel {
@@ -59,24 +60,33 @@ export interface UniversityFullModel {
 export interface TeamFullModel {
     id: string;
     name: string;
-    university?: UniversitySearchModel;
-    members: ProfileSearchModel[];
-    contests: ContestPerformanceModel[];
+    university: string;
+    members: { name: string; profileId: string }[];
+    contests: {
+        contestId: string;
+        name: string;
+        year: number;
+        problems?: Record<string, {
+            solved: boolean;
+            submissions?: number;
+            timeMinutes?: number;
+        }>;
+    }[];
 }
 
 export interface ContestFullModel {
     id: string;
     name: string;
-    year: string;
-    officialPageUrl?: string;
-    problemsPdfUrl?: string; // TODO: Remover Url
-    solutionsPdfUrl?: string; // TODO: Remover Url
-    ranking: TeamResultModel[];
-    problems: ProblemFullModel[];
+    year: number;
+    officialUrl: string;
+    problemsUrl?: string | null;
+    solutionsUrl?: string | null;
+    problemCount: number;
+    teams: string[];
 }
 
 export interface TeamResultModel {
-    team: TeamSearchModel; // maybe TeamSearchModel | ProfileSearchModel 
+    team: TeamSearchModel;
     position: number;
     penalty: number;
     submissions: SubmissionModel[];
@@ -95,6 +105,6 @@ export interface ProblemSearchModel {
     label: string;
 }
 
-export interface ProblemFullModel extends ProblemSearchModel { // TODO: criar pagina inteira
+export interface ProblemFullModel extends ProblemSearchModel {
     setter: ProfileSearchModel;
 }

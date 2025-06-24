@@ -4,15 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService, Event, Profile } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
+import type { EventFullModel, ProfileFullModel } from "../../../api/models";
 
 const AdminEvents = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [events, setEvents] = useState<EventFullModel[]>([]);
+  const [profiles, setProfiles] = useState<ProfileFullModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventFullModel | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     location: "",
@@ -63,7 +64,7 @@ const AdminEvents = () => {
     }
   };
 
-  const handleEdit = (event: Event) => {
+  const handleEdit = (event: EventFullModel) => {
     setEditingEvent(event);
     setFormData({
       name: event.name,

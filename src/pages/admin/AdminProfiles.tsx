@@ -4,15 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService, Profile, University } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
+import type { ProfileFullModel, UniversityFullModel } from "../../../api/models";
 
 const AdminProfiles = () => {
   const navigate = useNavigate();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [universities, setUniversities] = useState<University[]>([]);
+  const [profiles, setProfiles] = useState<ProfileFullModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [editingProfile, setEditingProfile] = useState<ProfileFullModel | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     handle: "",
@@ -48,12 +49,7 @@ const AdminProfiles = () => {
           ...formData
         });
       } else {
-        await dataService.addProfile({
-          ...formData,
-          contests: [],
-          teams: [],
-          events: []
-        });
+        await dataService.addProfile(formData);
       }
       
       const profilesData = await dataService.getProfiles();
@@ -66,7 +62,7 @@ const AdminProfiles = () => {
     }
   };
 
-  const handleEdit = (profile: Profile) => {
+  const handleEdit = (profile: ProfileFullModel) => {
     setEditingProfile(profile);
     setFormData({
       name: profile.name,

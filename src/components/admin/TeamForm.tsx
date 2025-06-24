@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { dataService, Team, Profile, University, Contest } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
+import type { TeamFullModel, ProfileFullModel, UniversityFullModel, ContestFullModel } from "../../../api/models";
 
 interface ContestParticipation {
   contestId: string;
@@ -18,7 +18,7 @@ interface ContestParticipation {
 
 interface TeamFormProps {
   isOpen: boolean;
-  editingTeam: Team | null;
+  editingTeam: TeamFullModel | null;
   onClose: () => void;
   onSave: () => void;
 }
@@ -31,9 +31,9 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     contests: [] as ContestParticipation[]
   });
   const [selectedContestForProblems, setSelectedContestForProblems] = useState<string | null>(null);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [universities, setUniversities] = useState<University[]>([]);
-  const [contests, setContests] = useState<Contest[]>([]);
+  const [profiles, setProfiles] = useState<ProfileFullModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
+  const [contests, setContests] = useState<ContestFullModel[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Load data when form opens
@@ -140,7 +140,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
       const newContest: ContestParticipation = {
         contestId: contest.id,
         name: contest.name,
-        year: new Date().getFullYear(),
+        year: contest.year,
         problems: {}
       };
       setFormData({ ...formData, contests: [...formData.contests, newContest] });

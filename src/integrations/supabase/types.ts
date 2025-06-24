@@ -9,7 +9,156 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      contests: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          official_url: string
+          problem_count: number
+          problems_url: string | null
+          solutions_url: string | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          official_url: string
+          problem_count?: number
+          problems_url?: string | null
+          solutions_url?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          official_url?: string
+          problem_count?: number
+          problems_url?: string | null
+          solutions_url?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          location: string
+          name: string
+          participants: Json | null
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          location: string
+          name: string
+          participants?: Json | null
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          location?: string
+          name?: string
+          participants?: Json | null
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          handle: string
+          id: string
+          name: string
+          university: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          handle: string
+          id?: string
+          name: string
+          university: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          handle?: string
+          id?: string
+          name?: string
+          university?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          contests: Json | null
+          created_at: string | null
+          id: string
+          members: Json | null
+          name: string
+          university: string
+          updated_at: string | null
+        }
+        Insert: {
+          contests?: Json | null
+          created_at?: string | null
+          id?: string
+          members?: Json | null
+          name: string
+          university: string
+          updated_at?: string | null
+        }
+        Update: {
+          contests?: Json | null
+          created_at?: string | null
+          id?: string
+          members?: Json | null
+          name?: string
+          university?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      universities: {
+        Row: {
+          created_at: string | null
+          id: string
+          location: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          location?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          location?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

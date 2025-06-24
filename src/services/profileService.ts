@@ -1,21 +1,48 @@
+
 import { ProfileFullModel, ProfileSearchModel } from "../../api/models";
+import { supabase } from '@/integrations/supabase/client';
 
 class ProfileService {
 
   async get(id: string): Promise<ProfileFullModel> {
-    const response = await fetch(`/api/profile/${id}`);
-    if (!response.ok) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
       throw new Error('Failed to fetch profile');
     }
-    return response.json();
+    
+    return {
+      id: data.id,
+      name: data.name,
+      handle: data.handle,
+      university: data.university,
+      teams: [],
+      events: [],
+      contests: []
+    };
   }
 
   async list(prefix: string): Promise<ProfileSearchModel[]> {
-    const response = await fetch(`/api/profile?prefix=${encodeURIComponent(prefix)}`);
-    if (!response.ok) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('name', `%${prefix}%`)
+      .limit(10);
+    
+    if (error) {
       throw new Error('Failed to fetch profiles');
     }
-    return response.json();
+    
+    return data.map(profile => ({
+      id: profile.id,
+      name: profile.name,
+      handle: profile.handle,
+      university: profile.university
+    }));
   }
   
 }

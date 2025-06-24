@@ -4,16 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService, Contest } from "@/services/dataService";
+import { dataService } from "@/services/dataService";
+import type { ContestFullModel } from "../../../api/models";
 
 const AdminContests = () => {
   const navigate = useNavigate();
-  const [contests, setContests] = useState<Contest[]>([]);
+  const [contests, setContests] = useState<ContestFullModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingContest, setEditingContest] = useState<Contest | null>(null);
+  const [editingContest, setEditingContest] = useState<ContestFullModel | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    year: new Date().getFullYear(),
     officialUrl: "",
     problemsUrl: "",
     solutionsUrl: "",
@@ -50,8 +52,7 @@ const AdminContests = () => {
         await dataService.addContest({
           ...formData,
           problemsUrl: formData.problemsUrl || null,
-          solutionsUrl: formData.solutionsUrl || null,
-          teams: []
+          solutionsUrl: formData.solutionsUrl || null
         });
       }
       
@@ -59,16 +60,17 @@ const AdminContests = () => {
       setContests(contestsData);
       setIsFormOpen(false);
       setEditingContest(null);
-      setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
+      setFormData({ name: "", year: new Date().getFullYear(), officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
     } catch (error) {
       console.error("Error saving contest:", error);
     }
   };
 
-  const handleEdit = (contest: Contest) => {
+  const handleEdit = (contest: ContestFullModel) => {
     setEditingContest(contest);
     setFormData({
       name: contest.name,
+      year: contest.year,
       officialUrl: contest.officialUrl,
       problemsUrl: contest.problemsUrl || "",
       solutionsUrl: contest.solutionsUrl || "",
@@ -138,6 +140,18 @@ const AdminContests = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.year}
+                    onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Official URL
                   </label>
                   <input
@@ -194,7 +208,7 @@ const AdminContests = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingContest(null);
-                      setFormData({ name: "", officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
+                      setFormData({ name: "", year: new Date().getFullYear(), officialUrl: "", problemsUrl: "", solutionsUrl: "", problemCount: 1 });
                     }}
                   >
                     Cancel
@@ -215,13 +229,13 @@ const AdminContests = () => {
                 <div key={contest.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
                     <h3 className="font-semibold">{contest.name}</h3>
+                    <p className="text-sm text-gray-600">Year: {contest.year}</p>
                     <p className="text-sm text-gray-600">
                       <a href={contest.officialUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                         Official Site
                       </a>
                     </p>
                     <p className="text-sm text-gray-600">{contest.problemCount} problems</p>
-                    <p className="text-sm text-gray-600">{contest.teams.length} teams participated</p>
                   </div>
                   <div className="flex gap-2">
                     <Button

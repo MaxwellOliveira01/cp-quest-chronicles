@@ -1,22 +1,46 @@
 
 import { TeamFullModel, TeamSearchModel } from '../../api/models';
+import { supabase } from '@/integrations/supabase/client';
 
 class TeamService {
 
   async get(id: string): Promise<TeamFullModel> {
-    const response = await fetch(`/api/team/${id}`);
-    if (!response.ok) {
+    const { data, error } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
       throw new Error('Failed to fetch team');
     }
-    return response.json();
+    
+    return {
+      id: data.id,
+      name: data.name,
+      university: data.university,
+      members: data.members || [],
+      contests: data.contests || []
+    };
   }
 
   async list(prefix: string): Promise<TeamSearchModel[]> {
-    const response = await fetch(`/api/team?prefix=${encodeURIComponent(prefix)}`);
-    if (!response.ok) {
+    const { data, error } = await supabase
+      .from('teams')
+      .select('*')
+      .ilike('name', `%${prefix}%`)
+      .limit(10);
+    
+    if (error) {
       throw new Error('Failed to fetch teams');
     }
-    return response.json();
+    
+    return data.map(team => ({
+      id: team.id,
+      name: team.name,
+      university: team.university,
+      members: []
+    }));
   }
   
 }
