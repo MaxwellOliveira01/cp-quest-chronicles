@@ -38,8 +38,11 @@ export interface ContestPerformanceModel {
     contest: ContestSearchModel;
 }
 
-export interface ProfileFullModel extends ProfileSearchModel {
-    university: UniversitySearchModel;
+export interface ProfileFullModel {
+    id: string;
+    name: string;
+    handle: string;
+    university: string;
     teams: TeamSearchModel[];
     events: EventSearchModel[];
     contests: ContestPerformanceModel[];
@@ -57,7 +60,7 @@ export interface UniversityFullModel {
 export interface TeamFullModel {
     id: string;
     name: string;
-    university: UniversitySearchModel;
+    university: string;
     members: { id: string; name: string; profileId: string }[];
     contests: ContestPerformanceModel[];
 }

@@ -19,7 +19,7 @@ const AdminEvents = () => {
     location: "",
     startDate: "",
     endDate: "",
-    participants: [] as string[]
+    students: [] as string[]
   });
 
   useEffect(() => {
@@ -44,21 +44,35 @@ const AdminEvents = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const selectedStudents = formData.students.map(studentId => {
+      const profile = profiles.find(p => p.id === studentId);
+      return {
+        id: studentId,
+        name: profile?.name || "",
+        handle: profile?.handle || "",
+        university: profile?.university || ""
+      };
+    });
+    
     try {
       if (editingEvent) {
         await dataService.updateEvent(editingEvent.id, {
           ...editingEvent,
-          ...formData
+          ...formData,
+          students: selectedStudents
         });
       } else {
-        await dataService.addEvent(formData);
+        await dataService.addEvent({
+          ...formData,
+          students: selectedStudents
+        });
       }
       
       const eventsData = await dataService.getEvents();
       setEvents(eventsData);
       setIsFormOpen(false);
       setEditingEvent(null);
-      setFormData({ name: "", location: "", startDate: "", endDate: "", participants: [] });
+      setFormData({ name: "", location: "", startDate: "", endDate: "", students: [] });
     } catch (error) {
       console.error("Error saving event:", error);
     }
@@ -71,7 +85,7 @@ const AdminEvents = () => {
       location: event.location,
       startDate: event.startDate,
       endDate: event.endDate,
-      participants: event.participants
+      students: event.students.map(s => s.id)
     });
     setIsFormOpen(true);
   };
@@ -88,11 +102,11 @@ const AdminEvents = () => {
     }
   };
 
-  const handleParticipantToggle = (profileId: string) => {
-    const participants = formData.participants.includes(profileId)
-      ? formData.participants.filter(id => id !== profileId)
-      : [...formData.participants, profileId];
-    setFormData({ ...formData, participants });
+  const handleStudentToggle = (profileId: string) => {
+    const students = formData.students.includes(profileId)
+      ? formData.students.filter(id => id !== profileId)
+      : [...formData.students, profileId];
+    setFormData({ ...formData, students });
   };
 
   if (loading) {
@@ -189,8 +203,8 @@ const AdminEvents = () => {
                       <label key={profile.id} className="flex items-center space-x-2 p-1">
                         <input
                           type="checkbox"
-                          checked={formData.participants.includes(profile.id)}
-                          onChange={() => handleParticipantToggle(profile.id)}
+                          checked={formData.students.includes(profile.id)}
+                          onChange={() => handleStudentToggle(profile.id)}
                           className="rounded"
                         />
                         <span className="text-sm">{profile.name} ({profile.handle})</span>
@@ -208,7 +222,7 @@ const AdminEvents = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingEvent(null);
-                      setFormData({ name: "", location: "", startDate: "", endDate: "", participants: [] });
+                      setFormData({ name: "", location: "", startDate: "", endDate: "", students: [] });
                     }}
                   >
                     Cancel
@@ -231,7 +245,7 @@ const AdminEvents = () => {
                     <h3 className="font-semibold">{event.name}</h3>
                     <p className="text-sm text-gray-600">{event.location}</p>
                     <p className="text-sm text-gray-600">{event.startDate} to {event.endDate}</p>
-                    <p className="text-sm text-gray-600">{event.participants.length} participants</p>
+                    <p className="text-sm text-gray-600">{event.students.length} participants</p>
                   </div>
                   <div className="flex gap-2">
                     <Button

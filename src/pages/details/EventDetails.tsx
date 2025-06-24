@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -91,10 +90,7 @@ const EventDetails = () => {
                         {student.name}
                       </h4>
                       <p className="text-sm text-gray-600">@{student.handle}</p>
-
-                      {student.university && (
-                        <p className="text-sm text-gray-500">{student.university.name}</p>
-                      )}
+                      <p className="text-sm text-gray-500">{student.university}</p>
                     </div>
                   </Link>
                 </div>

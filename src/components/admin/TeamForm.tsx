@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ interface ContestParticipation {
   contestId: string;
   name: string;
   year: number;
+  position: number;
   problems?: Record<string, {
     solved: boolean;
     submissions?: number;
@@ -68,7 +70,12 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
         name: editingTeam.name,
         university: editingTeam.university,
         members: editingTeam.members.map(m => m.profileId),
-        contests: editingTeam.contests
+        contests: editingTeam.contests.map(c => ({
+          contestId: c.contest.id,
+          name: c.contest.name,
+          year: c.contest.year,
+          position: c.position
+        }))
       });
     } else {
       setFormData({
@@ -86,8 +93,17 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     
     const selectedMembers = formData.members.map(memberId => {
       const profile = profiles.find(p => p.id === memberId);
-      return { name: profile?.name || "", profileId: memberId };
+      return { id: memberId, name: profile?.name || "", profileId: memberId };
     });
+    
+    const contestPerformances = formData.contests.map(c => ({
+      position: c.position || 1,
+      contest: {
+        id: c.contestId,
+        name: c.name,
+        year: c.year
+      }
+    }));
     
     try {
       if (editingTeam) {
@@ -96,14 +112,14 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
           name: formData.name,
           university: formData.university,
           members: selectedMembers,
-          contests: formData.contests
+          contests: contestPerformances
         });
       } else {
         await dataService.addTeam({
           name: formData.name,
           university: formData.university,
           members: selectedMembers,
-          contests: formData.contests
+          contests: contestPerformances
         });
       }
       
@@ -141,6 +157,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
         contestId: contest.id,
         name: contest.name,
         year: contest.year,
+        position: 1,
         problems: {}
       };
       setFormData({ ...formData, contests: [...formData.contests, newContest] });
@@ -156,6 +173,16 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
         }
         updatedProblems[problemKey] = { ...updatedProblems[problemKey], [field]: value };
         return { ...contest, problems: updatedProblems };
+      }
+      return contest;
+    });
+    setFormData({ ...formData, contests: updatedContests });
+  };
+
+  const handlePositionChange = (contestId: string, position: number) => {
+    const updatedContests = formData.contests.map(contest => {
+      if (contest.contestId === contestId) {
+        return { ...contest, position };
       }
       return contest;
     });
@@ -260,6 +287,18 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
                   </label>
                   {formData.contests.some(c => c.contestId === contest.id) && (
                     <div className="mt-2 ml-6">
+                      <div className="mb-2">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Position
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.contests.find(c => c.contestId === contest.id)?.position || 1}
+                          onChange={(e) => handlePositionChange(contest.id, parseInt(e.target.value) || 1)}
+                          className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
+                        />
+                      </div>
                       <Button
                         type="button"
                         variant="outline"

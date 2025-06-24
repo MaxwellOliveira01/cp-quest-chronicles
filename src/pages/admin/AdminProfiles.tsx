@@ -45,11 +45,22 @@ const AdminProfiles = () => {
     try {
       if (editingProfile) {
         await dataService.updateProfile(editingProfile.id, {
-          ...editingProfile,
-          ...formData
+          name: formData.name,
+          handle: formData.handle,
+          university: formData.university,
+          teams: editingProfile.teams,
+          events: editingProfile.events,
+          contests: editingProfile.contests
         });
       } else {
-        await dataService.addProfile(formData);
+        await dataService.addProfile({
+          name: formData.name,
+          handle: formData.handle,
+          university: formData.university,
+          teams: [],
+          events: [],
+          contests: []
+        });
       }
       
       const profilesData = await dataService.getProfiles();
