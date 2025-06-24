@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { universityService } from "@/services/universityService";
-import { UniversityFullModel } from "../../../../api/models";
+import { UniversityFullModel } from "../../../api/models";
 
 const UniversityDetails = () => {
   const { id } = useParams();

@@ -1,4 +1,4 @@
-import { UniversityFullModel, UniversitySearchModel } from "../../../api/models";
+import { UniversityFullModel, UniversitySearchModel } from "../../api/models";
 
 class UniversityService {
   async get(id: string): Promise<UniversityFullModel> {

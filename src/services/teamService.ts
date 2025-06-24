@@ -1,5 +1,5 @@
 
-import { TeamFullModel, TeamSearchModel } from '../../../api/models';
+import { TeamFullModel, TeamSearchModel } from '../../api/models';
 
 class TeamService {
 

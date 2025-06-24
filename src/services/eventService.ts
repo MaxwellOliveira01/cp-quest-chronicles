@@ -1,4 +1,4 @@
-import { EventFullModel, EventSearchModel } from "../../../api/models";
+import { EventFullModel, EventSearchModel } from "../../api/models";
 
 class EventService {
 

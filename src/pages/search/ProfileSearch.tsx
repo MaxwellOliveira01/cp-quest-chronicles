@@ -1,14 +1,15 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeft, Loader2 } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { TeamSearchModel } from "../../../../api/models";
-import { teamService } from "@/services/teamService";
+import { ProfileSearchModel } from "../../../api/models";
+import { profileService } from "@/services/profileService";
 
-const TeamSearch = () => {
+const ProfileSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<TeamSearchModel[]>([]);
+  const [results, setResults] = useState<ProfileSearchModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -17,10 +18,10 @@ const TeamSearch = () => {
     if (value.length > 0) {
       setLoading(true);
       try {
-        const teams = await teamService.list(value);
-        setResults(teams);
+        const profiles = await profileService.list(value);
+        setResults(profiles);
       } catch (error) {
-        console.error("Error searching teams:", error);
+        console.error("Error searching profiles:", error);
       } finally {
         setLoading(false);
       }
@@ -43,10 +44,10 @@ const TeamSearch = () => {
               Back to Home
             </Button>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Search Teams
+              Search Profiles
             </h1>
             <p className="text-gray-600">
-              Find competitive programming teams by name
+              Find competitive programmers by name or handle
             </p>
           </div>
 
@@ -54,7 +55,7 @@ const TeamSearch = () => {
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search for teams..."
+              placeholder="Search for profiles..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 py-3 text-lg"
@@ -63,23 +64,25 @@ const TeamSearch = () => {
 
           {loading && (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           )}
 
           {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-              {results.map((team) => (
+              {results.map((profile) => (
                 <Link
-                  key={team.id}
-                  to={`/team/${team.id}`}
+                  key={profile.id}
+                  to={`/profile/${profile.id}`}
                   className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {team.name}
+                        {profile.name}
                       </h3>
+                      <p className="text-gray-600">@{profile.handle}</p>
+                      <p className="text-sm text-gray-500">{profile.university.name}</p>
                     </div>
                   </div>
                 </Link>
@@ -89,7 +92,7 @@ const TeamSearch = () => {
 
           {!loading && searchTerm && results.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No teams found matching "{searchTerm}"</p>
+              <p className="text-gray-500">No profiles found matching "{searchTerm}"</p>
             </div>
           )}
         </div>
@@ -98,4 +101,4 @@ const TeamSearch = () => {
   );
 };
 
-export default TeamSearch;
+export default ProfileSearch;

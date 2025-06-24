@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, ExternalLink, Download, Loader2 } from "lucide-react";
 import { contestService } from "@/services/contestService";
-import { ContestFullModel } from "../../../../api/models";
+import { ContestFullModel } from "../../../api/models";
 
 const ContestDetails = () => {
   const { id } = useParams();

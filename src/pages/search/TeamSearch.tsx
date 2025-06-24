@@ -1,15 +1,14 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { ContestSearchModel } from "../../../../api/models";
-import { contestService } from "@/services/contestService";
+import { TeamSearchModel } from "../../../api/models";
+import { teamService } from "@/services/teamService";
 
-const ContestSearch = () => {
+const TeamSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<ContestSearchModel[]>([]);
+  const [results, setResults] = useState<TeamSearchModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -18,10 +17,10 @@ const ContestSearch = () => {
     if (value.length > 0) {
       setLoading(true);
       try {
-        const contests = await contestService.list(value);
-        setResults(contests);
+        const teams = await teamService.list(value);
+        setResults(teams);
       } catch (error) {
-        console.error("Error searching contests:", error);
+        console.error("Error searching teams:", error);
       } finally {
         setLoading(false);
       }
@@ -44,10 +43,10 @@ const ContestSearch = () => {
               Back to Home
             </Button>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Search Contests
+              Search Teams
             </h1>
             <p className="text-gray-600">
-              Find programming contests and view detailed results
+              Find competitive programming teams by name
             </p>
           </div>
 
@@ -55,7 +54,7 @@ const ContestSearch = () => {
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search for contests..."
+              placeholder="Search for teams..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 py-3 text-lg"
@@ -70,22 +69,17 @@ const ContestSearch = () => {
 
           {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-              {results.map((contest) => (
+              {results.map((team) => (
                 <Link
-                  key={contest.id}
-                  to={`/contest/${contest.id}`}
+                  key={team.id}
+                  to={`/team/${team.id}`}
                   className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {contest.name}
+                        {team.name}
                       </h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        View rankings and results
-                      </p>
                     </div>
                   </div>
                 </Link>
@@ -95,7 +89,7 @@ const ContestSearch = () => {
 
           {!loading && searchTerm && results.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No contests found matching "{searchTerm}"</p>
+              <p className="text-gray-500">No teams found matching "{searchTerm}"</p>
             </div>
           )}
         </div>
@@ -104,4 +98,4 @@ const ContestSearch = () => {
   );
 };
 
-export default ContestSearch;
+export default TeamSearch;

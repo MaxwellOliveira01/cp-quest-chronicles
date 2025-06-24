@@ -1,4 +1,4 @@
-import { ContestFullModel, ContestSearchModel } from "../../../api/models";
+import { ContestFullModel, ContestSearchModel } from "../../api/models";
 
 class ContestService {
 

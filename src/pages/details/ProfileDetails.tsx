@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import ContestPerformance from "@/components/ContestPerformance";
 import { profileService } from "@/services/profileService";
-import { ProfileFullModel } from "../../../../api/models";
+import { ProfileFullModel } from "../../../api/models";
 
 const ProfileDetails = () => {
   const { id } = useParams();

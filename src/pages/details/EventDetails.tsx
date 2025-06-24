@@ -4,7 +4,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, MapPin, Calendar, Loader2 } from "lucide-react";
-import { EventFullModel } from "../../../../api/models";
+import { EventFullModel } from "../../../api/models";
 import { eventService } from "@/services/eventService";
 
 const EventDetails = () => {

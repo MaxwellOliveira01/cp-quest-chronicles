@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, List } from "lucide-react";
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { ContestPerformanceModel } from "../../../api/models";
+import { ContestPerformanceModel } from "../../api/models";
 
 interface ContestPerformanceProps {
   contests: ContestPerformanceModel[];

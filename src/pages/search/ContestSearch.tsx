@@ -1,31 +1,30 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { universityService } from "@/services/universityService";
-import { UniversitySearchModel } from "../../../../api/models";
+import { ContestSearchModel } from "../../../api/models";
+import { contestService } from "@/services/contestService";
 
-const UniversitySearch = () => {
+const ContestSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<UniversitySearchModel[]>([]);
+  const [results, setResults] = useState<ContestSearchModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = async (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-
+      setLoading(true);
       try {
-        const universities = await universityService.list(value);
-        setResults(universities);
+        const contests = await contestService.list(value);
+        setResults(contests);
       } catch (error) {
-        console.error("Error searching universities:", error);
+        console.error("Error searching contests:", error);
       } finally {
         setLoading(false);
       }
-
     } else {
       setResults([]);
     }
@@ -45,10 +44,10 @@ const UniversitySearch = () => {
               Back to Home
             </Button>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Search Universities
+              Search Contests
             </h1>
             <p className="text-gray-600">
-              Find universities and their competitive programming teams
+              Find programming contests and view detailed results
             </p>
           </div>
 
@@ -56,7 +55,7 @@ const UniversitySearch = () => {
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search for universities..."
+              placeholder="Search for contests..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 py-3 text-lg"
@@ -71,19 +70,21 @@ const UniversitySearch = () => {
 
           {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-              {results.map((university) => (
+              {results.map((contest) => (
                 <Link
-                  key={university.id}
-                  to={`/university/${university.id}`}
+                  key={contest.id}
+                  to={`/contest/${contest.id}`}
                   className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {university.name}
+                        {contest.name}
                       </h3>
-                      <p className="text-gray-600">
-                        {university.location}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">
+                        View rankings and results
                       </p>
                     </div>
                   </div>
@@ -92,9 +93,9 @@ const UniversitySearch = () => {
             </div>
           )}
 
-          {searchTerm && results.length === 0 && (
+          {!loading && searchTerm && results.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No universities found matching "{searchTerm}"</p>
+              <p className="text-gray-500">No contests found matching "{searchTerm}"</p>
             </div>
           )}
         </div>
@@ -103,4 +104,4 @@ const UniversitySearch = () => {
   );
 };
 
-export default UniversitySearch;
+export default ContestSearch;

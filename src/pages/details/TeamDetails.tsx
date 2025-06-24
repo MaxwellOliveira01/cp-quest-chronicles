@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import ContestPerformance from "@/components/ContestPerformance";
-import { TeamFullModel } from "../../../../api/models";
+import { TeamFullModel } from "../../../api/models";
 import { teamService } from "@/services/teamService";
 
 const TeamDetails = () => {

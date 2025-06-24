@@ -1,4 +1,4 @@
-import { ProfileFullModel, ProfileSearchModel } from "../../../api/models";
+import { ProfileFullModel, ProfileSearchModel } from "../../api/models";
 
 class ProfileService {
 

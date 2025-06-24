@@ -2,29 +2,30 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { ProfileSearchModel } from "../../../../api/models";
-import { profileService } from "@/services/profileService";
+import { universityService } from "@/services/universityService";
+import { UniversitySearchModel } from "../../../api/models";
 
-const ProfileSearch = () => {
+const UniversitySearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<ProfileSearchModel[]>([]);
+  const [results, setResults] = useState<UniversitySearchModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = async (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-      setLoading(true);
+
       try {
-        const profiles = await profileService.list(value);
-        setResults(profiles);
+        const universities = await universityService.list(value);
+        setResults(universities);
       } catch (error) {
-        console.error("Error searching profiles:", error);
+        console.error("Error searching universities:", error);
       } finally {
         setLoading(false);
       }
+
     } else {
       setResults([]);
     }
@@ -44,10 +45,10 @@ const ProfileSearch = () => {
               Back to Home
             </Button>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Search Profiles
+              Search Universities
             </h1>
             <p className="text-gray-600">
-              Find competitive programmers by name or handle
+              Find universities and their competitive programming teams
             </p>
           </div>
 
@@ -55,7 +56,7 @@ const ProfileSearch = () => {
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search for profiles..."
+              placeholder="Search for universities..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 py-3 text-lg"
@@ -64,25 +65,26 @@ const ProfileSearch = () => {
 
           {loading && (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <Loader2 className="w-8 h-8 animate-spin" />
             </div>
           )}
 
           {!loading && results.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-              {results.map((profile) => (
+              {results.map((university) => (
                 <Link
-                  key={profile.id}
-                  to={`/profile/${profile.id}`}
+                  key={university.id}
+                  to={`/university/${university.id}`}
                   className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {profile.name}
+                        {university.name}
                       </h3>
-                      <p className="text-gray-600">@{profile.handle}</p>
-                      <p className="text-sm text-gray-500">{profile.university.name}</p>
+                      <p className="text-gray-600">
+                        {university.location}
+                      </p>
                     </div>
                   </div>
                 </Link>
@@ -90,9 +92,9 @@ const ProfileSearch = () => {
             </div>
           )}
 
-          {!loading && searchTerm && results.length === 0 && (
+          {searchTerm && results.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No profiles found matching "{searchTerm}"</p>
+              <p className="text-gray-500">No universities found matching "{searchTerm}"</p>
             </div>
           )}
         </div>
@@ -101,4 +103,4 @@ const ProfileSearch = () => {
   );
 };
 
-export default ProfileSearch;
+export default UniversitySearch;
