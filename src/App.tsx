@@ -1,4 +1,5 @@
 
+import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
@@ -23,7 +24,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 
 function App() {
   return (
-    <>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/search/profile" element={<ProfileSearch />} />
@@ -45,7 +46,7 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
       </Routes>
       <Toaster />
-    </>
+    </BrowserRouter>
   );
 }
 
