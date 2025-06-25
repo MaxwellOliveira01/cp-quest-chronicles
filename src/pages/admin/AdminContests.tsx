@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { contestService } from "@/services/contestService";
 import type { ContestFullModel } from "../../../api/models";
 
 const AdminContests = () => {
@@ -25,7 +24,7 @@ const AdminContests = () => {
   useEffect(() => {
     const fetchContests = async () => {
       try {
-        const contestsData = await dataService.getContests();
+        const contestsData = await contestService.getAll();
         setContests(contestsData);
       } catch (error) {
         console.error("Error fetching contests:", error);
@@ -42,21 +41,20 @@ const AdminContests = () => {
     
     try {
       if (editingContest) {
-        await dataService.updateContest(editingContest.id, {
-          ...editingContest,
+        await contestService.update(editingContest.id, {
           ...formData,
           problemsUrl: formData.problemsUrl || null,
           solutionsUrl: formData.solutionsUrl || null
         });
       } else {
-        await dataService.addContest({
+        await contestService.create({
           ...formData,
           problemsUrl: formData.problemsUrl || null,
           solutionsUrl: formData.solutionsUrl || null
         });
       }
       
-      const contestsData = await dataService.getContests();
+      const contestsData = await contestService.getAll();
       setContests(contestsData);
       setIsFormOpen(false);
       setEditingContest(null);
@@ -82,8 +80,8 @@ const AdminContests = () => {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this contest?")) {
       try {
-        await dataService.deleteContest(id);
-        const contestsData = await dataService.getContests();
+        await contestService.delete(id);
+        const contestsData = await contestService.getAll();
         setContests(contestsData);
       } catch (error) {
         console.error("Error deleting contest:", error);

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { eventService } from "@/services/eventService";
+import { profileService } from "@/services/profileService";
 import type { EventFullModel, ProfileFullModel } from "../../../api/models";
 
 const AdminEvents = () => {
@@ -25,8 +26,8 @@ const AdminEvents = () => {
     const fetchData = async () => {
       try {
         const [eventsData, profilesData] = await Promise.all([
-          dataService.getEvents(),
-          dataService.getProfiles()
+          eventService.getAll(),
+          profileService.getAll()
         ]);
         setEvents(eventsData);
         setProfiles(profilesData);
@@ -55,19 +56,22 @@ const AdminEvents = () => {
     
     try {
       if (editingEvent) {
-        await dataService.updateEvent(editingEvent.id, {
-          ...editingEvent,
-          ...formData,
-          students: selectedStudents
+        await eventService.update(editingEvent.id, {
+          name: formData.name,
+          location: formData.location,
+          startDate: formData.startDate,
+          endDate: formData.endDate
         });
       } else {
-        await dataService.addEvent({
-          ...formData,
-          students: selectedStudents
+        await eventService.create({
+          name: formData.name,
+          location: formData.location,
+          startDate: formData.startDate,
+          endDate: formData.endDate
         });
       }
       
-      const eventsData = await dataService.getEvents();
+      const eventsData = await eventService.getAll();
       setEvents(eventsData);
       setIsFormOpen(false);
       setEditingEvent(null);
@@ -92,8 +96,8 @@ const AdminEvents = () => {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this event?")) {
       try {
-        await dataService.deleteEvent(id);
-        const eventsData = await dataService.getEvents();
+        await eventService.delete(id);
+        const eventsData = await eventService.getAll();
         setEvents(eventsData);
       } catch (error) {
         console.error("Error deleting event:", error);

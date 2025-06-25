@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { universityService } from "@/services/universityService";
 import type { UniversityFullModel } from "../../../api/models";
 
 const AdminUniversities = () => {
@@ -21,7 +20,7 @@ const AdminUniversities = () => {
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
-        const universitiesData = await dataService.getUniversities();
+        const universitiesData = await universityService.getAll();
         setUniversities(universitiesData);
       } catch (error) {
         console.error("Error fetching universities:", error);
@@ -38,15 +37,18 @@ const AdminUniversities = () => {
     
     try {
       if (editingUniversity) {
-        await dataService.updateUniversity(editingUniversity.id, {
-          ...editingUniversity,
-          ...formData
+        await universityService.update(editingUniversity.id, {
+          name: formData.name,
+          location: formData.location
         });
       } else {
-        await dataService.addUniversity(formData);
+        await universityService.create({
+          name: formData.name,
+          location: formData.location
+        });
       }
       
-      const universitiesData = await dataService.getUniversities();
+      const universitiesData = await universityService.getAll();
       setUniversities(universitiesData);
       setIsFormOpen(false);
       setEditingUniversity(null);
@@ -68,8 +70,8 @@ const AdminUniversities = () => {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this university?")) {
       try {
-        await dataService.deleteUniversity(id);
-        const universitiesData = await dataService.getUniversities();
+        await universityService.delete(id);
+        const universitiesData = await universityService.getAll();
         setUniversities(universitiesData);
       } catch (error) {
         console.error("Error deleting university:", error);

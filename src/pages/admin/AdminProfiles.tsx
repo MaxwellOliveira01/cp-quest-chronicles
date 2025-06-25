@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { profileService } from "@/services/profileService";
+import { universityService } from "@/services/universityService";
 import type { ProfileFullModel, UniversityFullModel } from "../../../api/models";
 
 const AdminProfiles = () => {
@@ -24,8 +24,8 @@ const AdminProfiles = () => {
     const fetchData = async () => {
       try {
         const [profilesData, universitiesData] = await Promise.all([
-          dataService.getProfiles(),
-          dataService.getUniversities()
+          profileService.getAll(),
+          universityService.getAll()
         ]);
         setProfiles(profilesData);
         setUniversities(universitiesData);
@@ -44,23 +44,20 @@ const AdminProfiles = () => {
     
     try {
       if (editingProfile) {
-        await dataService.updateProfile(editingProfile.id, {
+        await profileService.update(editingProfile.id, {
           name: formData.name,
           handle: formData.handle,
           university: formData.university
         });
       } else {
-        await dataService.addProfile({
+        await profileService.create({
           name: formData.name,
           handle: formData.handle,
-          university: formData.university,
-          teams: [],
-          events: [],
-          contests: []
+          university: formData.university
         });
       }
       
-      const profilesData = await dataService.getProfiles();
+      const profilesData = await profileService.getAll();
       setProfiles(profilesData);
       setIsFormOpen(false);
       setEditingProfile(null);
@@ -83,8 +80,8 @@ const AdminProfiles = () => {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this profile?")) {
       try {
-        await dataService.deleteProfile(id);
-        const profilesData = await dataService.getProfiles();
+        await profileService.delete(id);
+        const profilesData = await profileService.getAll();
         setProfiles(profilesData);
       } catch (error) {
         console.error("Error deleting profile:", error);
