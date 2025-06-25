@@ -77,15 +77,21 @@ const TeamDetails = () => {
               <CardTitle>Team Members</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {team.members.map((member, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/profile/${member.profileId}`}>
-                      <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
-                    </Link>
-                  </div>
-                ))}
-              </div>
+              {team.members.length > 0 ? (
+                <div className="space-y-3">
+                  {team.members.map((member, index) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Link to={`/profile/${member.profileId}`}>
+                        <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-600">No team members assigned.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -94,21 +100,27 @@ const TeamDetails = () => {
               <CardTitle>Contest Participation</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {team.contests.map((performance, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/contest/${performance.contest.id}`}>
-                      <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                        {performance.contest.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">{performance.contest.year}</p>
-                      <p className="text-sm font-medium text-blue-600">
-                        Position: {performance.position}
-                      </p>
-                    </Link>
-                  </div>
-                ))}
-              </div>
+              {team.contests.length > 0 ? (
+                <div className="space-y-3">
+                  {team.contests.map((performance, index) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Link to={`/contest/${performance.contest.id}`}>
+                        <h4 className="font-semibold text-blue-600 hover:text-blue-800">
+                          {performance.contest.name}
+                        </h4>
+                        <p className="text-sm text-gray-600">{performance.contest.year}</p>
+                        <p className="text-sm font-medium text-blue-600">
+                          Position: {performance.position}
+                        </p>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-600">No contest participation yet.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

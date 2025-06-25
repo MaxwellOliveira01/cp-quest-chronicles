@@ -101,6 +101,63 @@ class UniversityService {
       location: university.location
     }));
   }
+
+  async getAll(): Promise<UniversityFullModel[]> {
+    const { data, error } = await supabase
+      .from('universities')
+      .select('*');
+    
+    if (error) {
+      throw new Error('Failed to fetch universities');
+    }
+    
+    return data.map(university => ({
+      id: university.id,
+      name: university.name,
+      location: university.location,
+      students: [],
+      teams: [],
+      contests: []
+    }));
+  }
+
+  async create(university: Omit<UniversityFullModel, 'id' | 'students' | 'teams' | 'contests'>): Promise<void> {
+    const { error } = await supabase
+      .from('universities')
+      .insert({
+        name: university.name,
+        location: university.location
+      });
+    
+    if (error) {
+      throw new Error('Failed to create university');
+    }
+  }
+
+  async update(id: string, university: Omit<UniversityFullModel, 'id' | 'students' | 'teams' | 'contests'>): Promise<void> {
+    const { error } = await supabase
+      .from('universities')
+      .update({
+        name: university.name,
+        location: university.location
+      })
+      .eq('id', id);
+    
+    if (error) {
+      throw new Error('Failed to update university');
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('universities')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      throw new Error('Failed to delete university');
+    }
+  }
 }
 
 export const universityService = new UniversityService();

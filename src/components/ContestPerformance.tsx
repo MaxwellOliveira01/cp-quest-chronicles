@@ -14,6 +14,22 @@ interface ContestPerformanceProps {
 const ContestPerformance = ({ contests, title = "Contest Performance" }: ContestPerformanceProps) => {
   const [showChart, setShowChart] = useState(true);
 
+  // If no contests, show only a descriptive message
+  if (!contests || contests.length === 0) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-gray-600">No contest performances available.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const resultsByYear = contests.reduce((acc, result) => {
     acc[result.contest.year] ??= [];
     acc[result.contest.year].push(result);

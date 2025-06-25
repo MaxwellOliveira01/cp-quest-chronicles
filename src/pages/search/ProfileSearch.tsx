@@ -1,46 +1,60 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Search, User } from "lucide-react";
+import { ArrowLeft, Search, Loader2, Users } from "lucide-react";
 import { profileService } from "@/services/profileService";
-import { ProfileSearchModel } from "../../../api/models";
+import { universityService } from "@/services/universityService";
+import { ProfileSearchModel, UniversitySearchModel } from "../../../api/models";
 
 const ProfileSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [universityFilter, setUniversityFilter] = useState("");
   const [profiles, setProfiles] = useState<ProfileSearchModel[]>([]);
+  const [universities, setUniversities] = useState<UniversitySearchModel[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const searchProfiles = async (term: string) => {
-    if (!term.trim()) {
+  useEffect(() => {
+    // Load universities for filter
+    const loadUniversities = async () => {
+      try {
+        const universityData = await universityService.list("");
+        setUniversities(universityData);
+      } catch (error) {
+        console.error("Error loading universities:", error);
+      }
+    };
+    loadUniversities();
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      handleSearch();
+    } else {
       setProfiles([]);
-      return;
     }
+  }, [searchTerm, universityFilter]);
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
     
     setLoading(true);
     try {
-      console.log("Searching for profiles with term:", term);
-      const results = await profileService.list(term);
-      console.log("Profile search results:", results);
+      const results = await profileService.list(searchTerm.trim(), universityFilter || undefined);
       setProfiles(results);
     } catch (error) {
       console.error("Error searching profiles:", error);
-      setProfiles([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      searchProfiles(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  const clearFilters = () => {
+    setSearchTerm("");
+    setUniversityFilter("");
+    setProfiles([]);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,66 +68,109 @@ const ProfileSearch = () => {
           Back to Home
         </Button>
 
+        <div className="flex items-center mb-8">
+          <Users className="w-8 h-8 text-blue-600 mr-3" />
+          <h1 className="text-3xl font-bold text-gray-900">Search Profiles</h1>
+        </div>
+
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-3xl flex items-center gap-3">
-              <User className="w-8 h-8" />
-              Search Profiles
-            </CardTitle>
-            <p className="text-gray-600">Find competitive programming profiles and view their contest history</p>
+            <CardTitle>Search Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profile Name
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search profiles..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  University
+                </label>
+                <select
+                  value={universityFilter}
+                  onChange={(e) => setUniversityFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">All Universities</option>
+                  {universities.map((university) => (
+                    <option key={university.id} value={university.name}>
+                      {university.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex items-end">
+                <Button 
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {loading && (
-          <div className="text-center py-8">
-            <p className="text-gray-600">Searching...</p>
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
           </div>
         )}
 
-        {profiles.length > 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profiles.map((profile) => (
-              <Card key={profile.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link to={`/profile/${profile.id}`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-xl font-semibold text-blue-600 hover:text-blue-800 mb-2">
-                          {profile.name}
-                        </h3>
-                        <p className="text-gray-600 mb-1">@{profile.handle}</p>
-                        <p className="text-sm text-gray-500">{typeof profile.university === 'string' ? profile.university : profile.university}</p>
-                      </div>
-                      <User className="w-6 h-6 text-gray-400" />
-                    </div>
-                  </CardContent>
-                </Link>
-              </Card>
-            ))}
-          </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {profiles.map((profile) => (
+            <Card key={profile.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-600 hover:text-blue-800">
+                  {profile.name}
+                </CardTitle>
+                <p className="text-gray-600">@{profile.handle}</p>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">{profile.university || 'No university'}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {!loading && profiles.length === 0 && searchTerm.trim() && (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No profiles found</h3>
+              <p className="text-gray-600">Try adjusting your search term or filters.</p>
+            </CardContent>
+          </Card>
         )}
 
-        {searchTerm && !loading && profiles.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-600">No profiles found matching "{searchTerm}"</p>
-          </div>
-        )}
-
-        {!searchTerm && (
-          <div className="text-center py-8">
-            <p className="text-gray-600">Enter a search term to find profiles</p>
-          </div>
+        {!searchTerm.trim() && (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Users className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Search for Competitive Programmers</h2>
+              <p className="text-gray-600 mb-6">
+                Find talented programmers, track their performance, and explore their achievements in competitive programming.
+              </p>
+              <p className="text-sm text-gray-500">
+                Enter a name to start searching for profiles.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

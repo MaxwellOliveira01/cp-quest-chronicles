@@ -105,8 +105,8 @@ class ProfileService {
     };
   }
 
-  async list(prefix: string): Promise<ProfileSearchModel[]> {
-    const { data, error } = await supabase
+  async list(prefix: string, universityFilter?: string): Promise<ProfileSearchModel[]> {
+    let query = supabase
       .from('profiles')
       .select(`
         *,
@@ -116,6 +116,12 @@ class ProfileService {
       `)
       .ilike('name', `%${prefix}%`)
       .limit(10);
+
+    if (universityFilter) {
+      query = query.eq('universities.name', universityFilter);
+    }
+    
+    const { data, error } = await query;
     
     if (error) {
       throw new Error('Failed to fetch profiles');
@@ -127,6 +133,93 @@ class ProfileService {
       handle: profile.handle,
       university: profile.universities?.name || ''
     }));
+  }
+
+  async getAll(): Promise<ProfileFullModel[]> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(`
+        *,
+        universities (
+          name
+        )
+      `);
+    
+    if (error) {
+      throw new Error('Failed to fetch profiles');
+    }
+    
+    return data.map(profile => ({
+      id: profile.id,
+      name: profile.name,
+      handle: profile.handle,
+      university: profile.universities?.name || '',
+      teams: [],
+      events: [],
+      contests: []
+    }));
+  }
+
+  async create(profile: Omit<ProfileFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<void> {
+    // Find university ID if university name is provided
+    let universityId = null;
+    if (profile.university) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', profile.university)
+        .single();
+      universityId = university?.id || null;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .insert({
+        name: profile.name,
+        handle: profile.handle,
+        university_id: universityId
+      });
+    
+    if (error) {
+      throw new Error('Failed to create profile');
+    }
+  }
+
+  async update(id: string, profile: Omit<ProfileFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<void> {
+    // Find university ID if university name is provided
+    let universityId = null;
+    if (profile.university) {
+      const { data: university } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', profile.university)
+        .single();
+      universityId = university?.id || null;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name: profile.name,
+        handle: profile.handle,
+        university_id: universityId
+      })
+      .eq('id', id);
+    
+    if (error) {
+      throw new Error('Failed to update profile');
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      throw new Error('Failed to delete profile');
+    }
   }
   
 }

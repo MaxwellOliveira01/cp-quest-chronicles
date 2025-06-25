@@ -3,7 +3,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { dataService } from "@/services/dataService";
+import { profileService } from "@/services/profileService";
+import { universityService } from "@/services/universityService";
+import { contestService } from "@/services/contestService";
+import { teamService } from "@/services/teamService";
 import type { TeamFullModel, ProfileFullModel, UniversityFullModel, ContestFullModel } from "../../../api/models";
 
 interface TeamFormProps {
@@ -36,9 +39,9 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     setLoading(true);
     try {
       const [profilesData, universitiesData, contestsData] = await Promise.all([
-        dataService.getProfiles(),
-        dataService.getUniversities(),
-        dataService.getContests()
+        profileService.getAll(),
+        universityService.getAll(),
+        contestService.getAll()
       ]);
       setProfiles(profilesData);
       setUniversities(universitiesData);
@@ -98,7 +101,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     
     try {
       if (editingTeam) {
-        await dataService.updateTeam(editingTeam.id, {
+        await teamService.update(editingTeam.id, {
           ...editingTeam,
           name: formData.name,
           university: formData.university,
@@ -106,7 +109,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
           contests: contestPerformances
         });
       } else {
-        await dataService.addTeam({
+        await teamService.create({
           name: formData.name,
           university: formData.university,
           members: selectedMembers,
@@ -165,7 +168,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     return (
       <Card className="mb-8">
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
         </CardContent>
       </Card>
     );
@@ -186,7 +189,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               required
             />
           </div>
@@ -198,7 +201,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
             <select
               value={formData.university}
               onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               required
             >
               <option value="">Select University</option>
@@ -275,7 +278,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
           </div>
           
           <div className="flex gap-4">
-            <Button type="submit" disabled={formData.members.length === 0}>
+            <Button type="submit" disabled={formData.members.length === 0} className="bg-teal-600 hover:bg-teal-700">
               {editingTeam ? 'Update' : 'Create'} Team
             </Button>
             <Button 

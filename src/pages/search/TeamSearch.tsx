@@ -1,98 +1,176 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowLeft, Loader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { TeamSearchModel } from "../../../api/models";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Search, Loader2, Building } from "lucide-react";
 import { teamService } from "@/services/teamService";
+import { universityService } from "@/services/universityService";
+import { TeamSearchModel, UniversitySearchModel } from "../../../api/models";
 
 const TeamSearch = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<TeamSearchModel[]>([]);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [universityFilter, setUniversityFilter] = useState("");
+  const [teams, setTeams] = useState<TeamSearchModel[]>([]);
+  const [universities, setUniversities] = useState<UniversitySearchModel[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (value: string) => {
-    setSearchTerm(value);
-    if (value.length > 0) {
-      setLoading(true);
+  useEffect(() => {
+    // Load universities for filter
+    const loadUniversities = async () => {
       try {
-        const teams = await teamService.list(value);
-        setResults(teams);
+        const universityData = await universityService.list("");
+        setUniversities(universityData);
       } catch (error) {
-        console.error("Error searching teams:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error loading universities:", error);
       }
+    };
+    loadUniversities();
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      handleSearch();
     } else {
-      setResults([]);
+      setTeams([]);
     }
+  }, [searchTerm, universityFilter]);
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    
+    setLoading(true);
+    try {
+      const results = await teamService.list(searchTerm.trim(), universityFilter || undefined);
+      setTeams(results);
+    } catch (error) {
+      console.error("Error searching teams:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setUniversityFilter("");
+    setTeams([]);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate("/")}
-              className="mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Search Teams
-            </h1>
-            <p className="text-gray-600">
-              Find competitive programming teams by name
-            </p>
-          </div>
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/")}
+          className="mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
 
-          <div className="relative mb-8">
-            <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search for teams..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 py-3 text-lg"
-            />
-          </div>
-
-          {loading && (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin" />
-            </div>
-          )}
-
-          {!loading && results.length > 0 && (
-            <div className="bg-white rounded-lg shadow-lg border border-gray-200">
-              {results.map((team) => (
-                <Link
-                  key={team.id}
-                  to={`/team/${team.id}`}
-                  className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900">
-                        {team.name}
-                      </h3>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {!loading && searchTerm && results.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No teams found matching "{searchTerm}"</p>
-            </div>
-          )}
+        <div className="flex items-center mb-8">
+          <Building className="w-8 h-8 text-purple-600 mr-3" />
+          <h1 className="text-3xl font-bold text-gray-900">Search Teams</h1>
         </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Search Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Team Name
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search teams..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  University
+                </label>
+                <select
+                  value={universityFilter}
+                  onChange={(e) => setUniversityFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">All Universities</option>
+                  {universities.map((university) => (
+                    <option key={university.id} value={university.name}>
+                      {university.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex items-end">
+                <Button 
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {loading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {teams.map((team) => (
+            <Card key={team.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/team/${team.id}`)}>
+              <CardHeader>
+                <CardTitle className="text-lg text-purple-600 hover:text-purple-800">
+                  {team.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">{team.university || 'No university'}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {!loading && teams.length === 0 && searchTerm.trim() && (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Building className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No teams found</h3>
+              <p className="text-gray-600">Try adjusting your search term or filters.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!searchTerm.trim() && (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Building className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Search for Programming Teams</h2>
+              <p className="text-gray-600 mb-6">
+                Discover competitive programming teams, their members, and track their performance across contests.
+              </p>
+              <p className="text-sm text-gray-500">
+                Enter a team name to start searching.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
