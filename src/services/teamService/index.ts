@@ -1,4 +1,3 @@
-
 import { TeamFullModel, TeamSearchModel } from '../../../api/models';
 import { supabase } from '@/integrations/supabase/client';
 import { combineTeamMembers } from './memberUtils';
@@ -22,7 +21,7 @@ class TeamService {
     // Get contest performances for this team
     const performances = await fetchContestPerformances(id);
 
-    // Combine all members
+    // Combine all members - pass individual members and the junction array
     const allMembers = combineTeamMembers(
       teamData.member1,
       teamData.member2,
@@ -91,7 +90,7 @@ class TeamService {
       const teamMemberships = allTeamMemberships.filter(tm => tm.team_id === team.id);
       const teamPerformances = allPerformances.filter(p => p.team_id === team.id);
 
-      // Combine all members
+      // Combine all members - pass individual members and the junction array
       const allMembers = combineTeamMembers(
         team.member1,
         team.member2,
