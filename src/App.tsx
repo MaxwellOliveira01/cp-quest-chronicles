@@ -14,6 +14,7 @@ import UniversityDetails from "./pages/details/UniversityDetails";
 import ContestDetails from "./pages/details/ContestDetails";
 import TeamDetails from "./pages/details/TeamDetails";
 import EventDetails from "./pages/details/EventDetails";
+import ProfileDetails from "./pages/details/ProfileDetails";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPersons from "./pages/admin/AdminPersons";
 import AdminUniversities from "./pages/admin/AdminUniversities";
@@ -28,11 +29,13 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/search/person" element={<PersonSearch />} />
+        <Route path="/search/profile" element={<PersonSearch />} />
         <Route path="/search/university" element={<UniversitySearch />} />
         <Route path="/search/contest" element={<ContestSearch />} />
         <Route path="/search/team" element={<TeamSearch />} />
         <Route path="/search/event" element={<EventSearch />} />
         <Route path="/person/:id" element={<PersonDetails />} />
+        <Route path="/profile/:id" element={<ProfileDetails />} />
         <Route path="/university/:id" element={<UniversityDetails />} />
         <Route path="/contest/:id" element={<ContestDetails />} />
         <Route path="/team/:id" element={<TeamDetails />} />

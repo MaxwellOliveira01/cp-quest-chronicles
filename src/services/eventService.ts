@@ -18,9 +18,9 @@ class EventService {
 
     // Get participants (students) for this event
     const { data: participants, error: participantsError } = await supabase
-      .from('profile_events')
+      .from('person_events')
       .select(`
-        profiles (
+        persons (
           id,
           name,
           handle,
@@ -42,10 +42,10 @@ class EventService {
       startDate: eventData.start_date,
       endDate: eventData.end_date,
       students: participants?.map(p => ({
-        id: p.profiles.id,
-        name: p.profiles.name,
-        handle: p.profiles.handle,
-        university: p.profiles.universities?.name || ''
+        id: p.persons.id,
+        name: p.persons.name,
+        handle: p.persons.handle,
+        university: p.persons.universities?.name || ''
       })) || []
     };
   }

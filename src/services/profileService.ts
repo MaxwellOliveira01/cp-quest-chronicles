@@ -1,13 +1,12 @@
-
-import { ProfileFullModel, ProfileSearchModel } from '../../api/models';
+import { PersonFullModel, PersonSearchModel } from '../../api/models';
 import { supabase } from '@/integrations/supabase/client';
 
 class ProfileService {
 
-  async get(id: string): Promise<ProfileFullModel> {
-    // Get profile with university
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
+  async get(id: string): Promise<PersonFullModel> {
+    // Get person with university
+    const { data: personData, error: personError } = await supabase
+      .from('persons')
       .select(`
         *,
         universities (
@@ -19,11 +18,11 @@ class ProfileService {
       .eq('id', id)
       .single();
     
-    if (profileError) {
-      throw new Error('Failed to fetch profile');
+    if (personError) {
+      throw new Error('Failed to fetch person');
     }
 
-    // Get teams for this profile
+    // Get teams for this person
     const { data: teamMemberships, error: teamsError } = await supabase
       .from('team_members')
       .select(`
@@ -35,15 +34,15 @@ class ProfileService {
           )
         )
       `)
-      .eq('profile_id', id);
+      .eq('person_id', id);
 
     if (teamsError) {
       throw new Error('Failed to fetch teams');
     }
 
-    // Get events for this profile
+    // Get events for this person
     const { data: eventMemberships, error: eventsError } = await supabase
-      .from('profile_events')
+      .from('person_events')
       .select(`
         events (
           id,
@@ -53,13 +52,13 @@ class ProfileService {
           end_date
         )
       `)
-      .eq('profile_id', id);
+      .eq('person_id', id);
 
     if (eventsError) {
       throw new Error('Failed to fetch events');
     }
 
-    // Get contest performances for this profile
+    // Get contest performances for this person
     const { data: performances, error: performancesError } = await supabase
       .from('contest_performances')
       .select(`
@@ -70,17 +69,17 @@ class ProfileService {
           year
         )
       `)
-      .eq('profile_id', id);
+      .eq('person_id', id);
 
     if (performancesError) {
       throw new Error('Failed to fetch contest performances');
     }
 
     return {
-      id: profileData.id,
-      name: profileData.name,
-      handle: profileData.handle,
-      university: profileData.universities?.name || '',
+      id: personData.id,
+      name: personData.name,
+      handle: personData.handle,
+      university: personData.universities?.name || '',
       teams: teamMemberships?.map(tm => ({
         id: tm.teams.id,
         name: tm.teams.name,
@@ -105,9 +104,9 @@ class ProfileService {
     };
   }
 
-  async list(prefix: string, universityFilter?: string): Promise<ProfileSearchModel[]> {
+  async list(prefix: string, universityFilter?: string): Promise<PersonSearchModel[]> {
     let query = supabase
-      .from('profiles')
+      .from('persons')
       .select(`
         *,
         universities (
@@ -118,26 +117,36 @@ class ProfileService {
       .limit(10);
 
     if (universityFilter) {
-      query = query.eq('universities.name', universityFilter);
+      const { data: universityData } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', universityFilter)
+        .single();
+      
+      if (universityData) {
+        query = query.eq('university_id', universityData.id);
+      } else {
+        return [];
+      }
     }
     
     const { data, error } = await query;
     
     if (error) {
-      throw new Error('Failed to fetch profiles');
+      throw new Error('Failed to fetch persons');
     }
     
-    return data.map(profile => ({
-      id: profile.id,
-      name: profile.name,
-      handle: profile.handle,
-      university: profile.universities?.name || ''
+    return data.map(person => ({
+      id: person.id,
+      name: person.name,
+      handle: person.handle,
+      university: person.universities?.name || ''
     }));
   }
 
-  async getAll(): Promise<ProfileFullModel[]> {
+  async getAll(): Promise<PersonFullModel[]> {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('persons')
       .select(`
         *,
         universities (
@@ -146,21 +155,21 @@ class ProfileService {
       `);
     
     if (error) {
-      throw new Error('Failed to fetch profiles');
+      throw new Error('Failed to fetch persons');
     }
     
-    return data.map(profile => ({
-      id: profile.id,
-      name: profile.name,
-      handle: profile.handle,
-      university: profile.universities?.name || '',
+    return data.map(person => ({
+      id: person.id,
+      name: person.name,
+      handle: person.handle,
+      university: person.universities?.name || '',
       teams: [],
       events: [],
       contests: []
     }));
   }
 
-  async create(profile: Omit<ProfileFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<void> {
+  async create(profile: Omit<PersonFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<void> {
     // Find university ID if university name is provided
     let universityId = null;
     if (profile.university) {
@@ -173,7 +182,7 @@ class ProfileService {
     }
 
     const { error } = await supabase
-      .from('profiles')
+      .from('persons')
       .insert({
         name: profile.name,
         handle: profile.handle,
@@ -181,11 +190,11 @@ class ProfileService {
       });
     
     if (error) {
-      throw new Error('Failed to create profile');
+      throw new Error('Failed to create person');
     }
   }
 
-  async update(id: string, profile: Omit<ProfileFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<void> {
+  async update(id: string, profile: Omit<PersonFullModel, 'id' | 'teams' | 'events' | 'contests'>): Promise<void> {
     // Find university ID if university name is provided
     let universityId = null;
     if (profile.university) {
@@ -198,7 +207,7 @@ class ProfileService {
     }
 
     const { error } = await supabase
-      .from('profiles')
+      .from('persons')
       .update({
         name: profile.name,
         handle: profile.handle,
@@ -207,18 +216,18 @@ class ProfileService {
       .eq('id', id);
     
     if (error) {
-      throw new Error('Failed to update profile');
+      throw new Error('Failed to update person');
     }
   }
 
   async delete(id: string): Promise<void> {
     const { error } = await supabase
-      .from('profiles')
+      .from('persons')
       .delete()
       .eq('id', id);
     
     if (error) {
-      throw new Error('Failed to delete profile');
+      throw new Error('Failed to delete person');
     }
   }
   

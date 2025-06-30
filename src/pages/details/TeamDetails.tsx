@@ -81,7 +81,7 @@ const TeamDetails = () => {
                 <div className="space-y-3">
                   {team.members.map((member, index) => (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <Link to={`/profile/${member.profileId}`}>
+                      <Link to={`/person/${member.personId}`}>
                         <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
                       </Link>
                     </div>

@@ -3,11 +3,11 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { profileService } from "@/services/profileService";
+import { personService } from "@/services/personService";
 import { universityService } from "@/services/universityService";
 import { contestService } from "@/services/contestService";
 import { teamService } from "@/services/teamService";
-import type { TeamFullModel, ProfileFullModel, UniversityFullModel, ContestFullModel } from "../../../api/models";
+import type { TeamFullModel, PersonFullModel, UniversityFullModel, ContestFullModel } from "../../../api/models";
 
 interface TeamFormProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     members: [] as string[],
     contests: [] as { contestId: string; position: number }[]
   });
-  const [profiles, setProfiles] = useState<ProfileFullModel[]>([]);
+  const [persons, setPersons] = useState<PersonFullModel[]>([]);
   const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
   const [contests, setContests] = useState<ContestFullModel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,12 +38,12 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
   const loadFormData = async () => {
     setLoading(true);
     try {
-      const [profilesData, universitiesData, contestsData] = await Promise.all([
-        profileService.getAll(),
+      const [personsData, universitiesData, contestsData] = await Promise.all([
+        personService.getAll(),
         universityService.getAll(),
         contestService.getAll()
       ]);
-      setProfiles(profilesData);
+      setPersons(personsData);
       setUniversities(universitiesData);
       setContests(contestsData);
     } catch (error) {
@@ -59,7 +59,7 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
       setFormData({
         name: editingTeam.name,
         university: editingTeam.university,
-        members: editingTeam.members.map(m => m.profileId),
+        members: editingTeam.members.map(m => m.personId),
         contests: editingTeam.contests.map(c => ({
           contestId: c.contest.id,
           position: c.position
@@ -79,11 +79,11 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     e.preventDefault();
     
     const selectedMembers = formData.members.map(memberId => {
-      const profile = profiles.find(p => p.id === memberId);
+      const person = persons.find(p => p.id === memberId);
       return { 
         id: memberId, 
-        name: profile?.name || "", 
-        profileId: memberId 
+        name: person?.name || "", 
+        personId: memberId 
       };
     });
     
@@ -123,15 +123,15 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
     }
   };
 
-  const handleMemberToggle = (profileId: string) => {
-    const isCurrentlySelected = formData.members.includes(profileId);
+  const handleMemberToggle = (personId: string) => {
+    const isCurrentlySelected = formData.members.includes(personId);
     
     if (isCurrentlySelected) {
-      const members = formData.members.filter(id => id !== profileId);
+      const members = formData.members.filter(id => id !== personId);
       setFormData({ ...formData, members });
     } else {
       if (formData.members.length < 3) {
-        const members = [...formData.members, profileId];
+        const members = [...formData.members, personId];
         setFormData({ ...formData, members });
       }
     }
@@ -218,21 +218,21 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
               Team Members (max 3)
             </label>
             <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
-              {profiles.map((profile) => {
-                const isSelected = formData.members.includes(profile.id);
+              {persons.map((person) => {
+                const isSelected = formData.members.includes(person.id);
                 const canSelect = isSelected || formData.members.length < 3;
                 
                 return (
-                  <label key={profile.id} className="flex items-center space-x-2 p-1">
+                  <label key={person.id} className="flex items-center space-x-2 p-1">
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={() => handleMemberToggle(profile.id)}
+                      onChange={() => handleMemberToggle(person.id)}
                       disabled={!canSelect}
                       className="rounded"
                     />
                     <span className={`text-sm ${!canSelect ? 'text-gray-400' : ''}`}>
-                      {profile.name} ({profile.handle}) - {profile.university || 'No university'}
+                      {person.name} ({person.handle}) - {person.university || 'No university'}
                     </span>
                   </label>
                 );

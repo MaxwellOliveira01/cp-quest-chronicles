@@ -6,12 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import ContestPerformance from "@/components/ContestPerformance";
 import { profileService } from "@/services/profileService";
-import { ProfileFullModel } from "../../../api/models";
+import { PersonFullModel } from "../../../api/models";
 
 const ProfileDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<ProfileFullModel | null>(null);
+  const [profile, setProfile] = useState<PersonFullModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const ProfileDetails = () => {
       <div className="container mx-auto px-4 py-8">
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/search/profile")}
+          onClick={() => navigate("/search/person")}
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

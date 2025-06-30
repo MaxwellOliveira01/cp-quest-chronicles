@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Search, Loader2, Users } from "lucide-react";
 import { profileService } from "@/services/profileService";
 import { universityService } from "@/services/universityService";
-import { ProfileSearchModel, UniversitySearchModel } from "../../../api/models";
+import { PersonSearchModel, UniversitySearchModel } from "../../../api/models";
 
 const ProfileSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [universityFilter, setUniversityFilter] = useState("");
-  const [profiles, setProfiles] = useState<ProfileSearchModel[]>([]);
+  const [profiles, setProfiles] = useState<PersonSearchModel[]>([]);
   const [universities, setUniversities] = useState<UniversitySearchModel[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -70,7 +71,7 @@ const ProfileSearch = () => {
 
         <div className="flex items-center mb-8">
           <Users className="w-8 h-8 text-blue-600 mr-3" />
-          <h1 className="text-3xl font-bold text-gray-900">Search Profiles</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Search Persons</h1>
         </div>
 
         <Card className="mb-8">
@@ -81,13 +82,13 @@ const ProfileSearch = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Name
+                  Person Name
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Search profiles..."
+                    placeholder="Search persons..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -134,7 +135,7 @@ const ProfileSearch = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {profiles.map((profile) => (
-            <Card key={profile.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/profile/${profile.id}`)}>
+            <Card key={profile.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/person/${profile.id}`)}>
               <CardHeader>
                 <CardTitle className="text-lg text-blue-600 hover:text-blue-800">
                   {profile.name}
@@ -152,7 +153,7 @@ const ProfileSearch = () => {
           <Card>
             <CardContent className="text-center py-8">
               <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No profiles found</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No persons found</h3>
               <p className="text-gray-600">Try adjusting your search term or filters.</p>
             </CardContent>
           </Card>
@@ -167,7 +168,7 @@ const ProfileSearch = () => {
                 Find talented programmers, track their performance, and explore their achievements in competitive programming.
               </p>
               <p className="text-sm text-gray-500">
-                Enter a name to start searching for profiles.
+                Enter a name to start searching for persons.
               </p>
             </CardContent>
           </Card>
