@@ -1,5 +1,5 @@
 
-export interface ProfileSearchModel {
+export interface PersonSearchModel {
     id: string;
     name: string;
     handle: string;
@@ -15,7 +15,7 @@ export interface UniversitySearchModel {
 export interface TeamSearchModel {
     id: string;
     name: string;
-    members: ProfileSearchModel[];
+    members: PersonSearchModel[];
     university: string;
 }
 
@@ -38,7 +38,7 @@ export interface ContestPerformanceModel {
     contest: ContestSearchModel;
 }
 
-export interface ProfileFullModel {
+export interface PersonFullModel {
     id: string;
     name: string;
     handle: string;
@@ -52,7 +52,7 @@ export interface UniversityFullModel {
     id: string;
     name: string;
     location: string;
-    students: ProfileSearchModel[];
+    students: PersonSearchModel[];
     teams: TeamSearchModel[];
     contests: ContestSearchModel[];
 }
@@ -61,12 +61,12 @@ export interface TeamFullModel {
     id: string;
     name: string;
     university: string;
-    members: { id: string; name: string; profileId: string }[];
+    members: { id: string; name: string; personId: string }[];
     contests: ContestPerformanceModel[];
 }
 
 export interface EventFullModel extends EventSearchModel {
-    students: ProfileSearchModel[];
+    students: PersonSearchModel[];
 }
 
 export interface SubmissionModel {
@@ -103,5 +103,5 @@ export interface ContestFullModel {
 }
 
 export interface ProblemFullModel extends ProblemSearchModel {
-    setter: ProfileSearchModel;
+    setter: PersonSearchModel;
 }

@@ -14,24 +14,24 @@ export type Database = {
           contest_id: string
           created_at: string | null
           id: string
+          person_id: string | null
           position: number
-          profile_id: string | null
           team_id: string | null
         }
         Insert: {
           contest_id: string
           created_at?: string | null
           id?: string
+          person_id?: string | null
           position: number
-          profile_id?: string | null
           team_id?: string | null
         }
         Update: {
           contest_id?: string
           created_at?: string | null
           id?: string
+          person_id?: string | null
           position?: number
-          profile_id?: string | null
           team_id?: string | null
         }
         Relationships: [
@@ -44,9 +44,9 @@ export type Database = {
           },
           {
             foreignKeyName: "contest_performances_profile_id_fkey"
-            columns: ["profile_id"]
+            columns: ["person_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
           {
@@ -124,24 +124,24 @@ export type Database = {
         }
         Relationships: []
       }
-      profile_events: {
+      person_events: {
         Row: {
           created_at: string | null
           event_id: string
           id: string
-          profile_id: string
+          person_id: string
         }
         Insert: {
           created_at?: string | null
           event_id: string
           id?: string
-          profile_id: string
+          person_id: string
         }
         Update: {
           created_at?: string | null
           event_id?: string
           id?: string
-          profile_id?: string
+          person_id?: string
         }
         Relationships: [
           {
@@ -153,14 +153,14 @@ export type Database = {
           },
           {
             foreignKeyName: "profile_events_profile_id_fkey"
-            columns: ["profile_id"]
+            columns: ["person_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
         ]
       }
-      profiles: {
+      persons: {
         Row: {
           created_at: string | null
           handle: string
@@ -199,27 +199,27 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          profile_id: string
+          person_id: string
           team_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
-          profile_id: string
+          person_id: string
           team_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          profile_id?: string
+          person_id?: string
           team_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "team_members_profile_id_fkey"
-            columns: ["profile_id"]
+            columns: ["person_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
           {
@@ -235,53 +235,53 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          member1_id: string | null
-          member2_id: string | null
-          member3_id: string | null
           name: string
+          person1_id: string | null
+          person2_id: string | null
+          person3_id: string | null
           university_id: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
-          member1_id?: string | null
-          member2_id?: string | null
-          member3_id?: string | null
           name: string
+          person1_id?: string | null
+          person2_id?: string | null
+          person3_id?: string | null
           university_id?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
-          member1_id?: string | null
-          member2_id?: string | null
-          member3_id?: string | null
           name?: string
+          person1_id?: string | null
+          person2_id?: string | null
+          person3_id?: string | null
           university_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "teams_member1_id_fkey"
-            columns: ["member1_id"]
+            columns: ["person1_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "teams_member2_id_fkey"
-            columns: ["member2_id"]
+            columns: ["person2_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "teams_member3_id_fkey"
-            columns: ["member3_id"]
+            columns: ["person3_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
           {

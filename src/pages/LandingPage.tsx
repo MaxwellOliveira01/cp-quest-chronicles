@@ -13,10 +13,10 @@ const LandingPage = () => {
 
   const searchTypes = [
     {
-      title: "Profiles",
+      title: "Persons",
       description: "Find contestants by name or handle",
       icon: Users,
-      path: "/search/profile",
+      path: "/search/person",
       color: "bg-blue-500"
     },
     {

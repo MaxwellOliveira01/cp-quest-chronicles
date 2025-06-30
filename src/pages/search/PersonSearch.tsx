@@ -3,16 +3,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Search, Loader2, Building } from "lucide-react";
-import { teamService } from "@/services/teamService";
+import { ArrowLeft, Search, Loader2, Users } from "lucide-react";
+import { personService } from "@/services/personService";
 import { universityService } from "@/services/universityService";
-import { TeamSearchModel, UniversitySearchModel } from "../../../api/models";
+import { PersonSearchModel, UniversitySearchModel } from "../../../api/models";
 
-const TeamSearch = () => {
+const PersonSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [universityFilter, setUniversityFilter] = useState("");
-  const [teams, setTeams] = useState<TeamSearchModel[]>([]);
+  const [persons, setPersons] = useState<PersonSearchModel[]>([]);
   const [universities, setUniversities] = useState<UniversitySearchModel[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +33,7 @@ const TeamSearch = () => {
     if (searchTerm.trim()) {
       handleSearch();
     } else {
-      setTeams([]);
+      setPersons([]);
     }
   }, [searchTerm, universityFilter]);
 
@@ -42,10 +42,10 @@ const TeamSearch = () => {
     
     setLoading(true);
     try {
-      const results = await teamService.list(searchTerm.trim(), universityFilter || undefined);
-      setTeams(results);
+      const results = await personService.list(searchTerm.trim(), universityFilter || undefined);
+      setPersons(results);
     } catch (error) {
-      console.error("Error searching teams:", error);
+      console.error("Error searching persons:", error);
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ const TeamSearch = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setUniversityFilter("");
-    setTeams([]);
+    setPersons([]);
   };
 
   return (
@@ -70,8 +70,8 @@ const TeamSearch = () => {
         </Button>
 
         <div className="flex items-center mb-8">
-          <Building className="w-8 h-8 text-purple-600 mr-3" />
-          <h1 className="text-3xl font-bold text-gray-900">Search Teams</h1>
+          <Users className="w-8 h-8 text-blue-600 mr-3" />
+          <h1 className="text-3xl font-bold text-gray-900">Search Persons</h1>
         </div>
 
         <Card className="mb-8">
@@ -82,16 +82,16 @@ const TeamSearch = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Team Name
+                  Person Name
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Search teams..."
+                    placeholder="Search persons..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -103,7 +103,7 @@ const TeamSearch = () => {
                 <select
                   value={universityFilter}
                   onChange={(e) => setUniversityFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Universities</option>
                   {universities.map((university) => (
@@ -129,30 +129,31 @@ const TeamSearch = () => {
 
         {loading && (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
           </div>
         )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teams.map((team) => (
-            <Card key={team.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/team/${team.id}`)}>
+          {persons.map((person) => (
+            <Card key={person.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/person/${person.id}`)}>
               <CardHeader>
-                <CardTitle className="text-lg text-purple-600 hover:text-purple-800">
-                  {team.name}
+                <CardTitle className="text-lg text-blue-600 hover:text-blue-800">
+                  {person.name}
                 </CardTitle>
+                <p className="text-gray-600">@{person.handle}</p>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{team.university || 'No university'}</p>
+                <p className="text-sm text-gray-600">{person.university || 'No university'}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {!loading && teams.length === 0 && searchTerm.trim() && (
+        {!loading && persons.length === 0 && searchTerm.trim() && (
           <Card>
             <CardContent className="text-center py-8">
-              <Building className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No teams found</h3>
+              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No persons found</h3>
               <p className="text-gray-600">Try adjusting your search term or filters.</p>
             </CardContent>
           </Card>
@@ -161,13 +162,13 @@ const TeamSearch = () => {
         {!searchTerm.trim() && (
           <Card>
             <CardContent className="text-center py-12">
-              <Building className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Search for Programming Teams</h2>
+              <Users className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Search for Competitive Programmers</h2>
               <p className="text-gray-600 mb-6">
-                Discover competitive programming teams, their members, and track their performance across contests.
+                Find talented programmers, track their performance, and explore their achievements in competitive programming.
               </p>
               <p className="text-sm text-gray-500">
-                Enter a team name to start searching.
+                Enter a name to start searching for persons.
               </p>
             </CardContent>
           </Card>
@@ -177,4 +178,4 @@ const TeamSearch = () => {
   );
 };
 
-export default TeamSearch;
+export default PersonSearch;
