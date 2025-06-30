@@ -13,15 +13,15 @@ class TeamService {
         universities (
           name
         ),
-        member1:profiles!teams_member1_id_fkey (
+        member1:persons!teams_person1_id_fkey (
           id,
           name
         ),
-        member2:profiles!teams_member2_id_fkey (
+        member2:persons!teams_person2_id_fkey (
           id,
           name
         ),
-        member3:profiles!teams_member3_id_fkey (
+        member3:persons!teams_person3_id_fkey (
           id,
           name
         )
@@ -37,7 +37,7 @@ class TeamService {
     const { data: teamMemberships, error: membersError } = await supabase
       .from('team_members')
       .select(`
-        profiles (
+        persons (
           id,
           name
         )
@@ -73,32 +73,32 @@ class TeamService {
       allMembers.push({
         id: teamData.member1.id,
         name: teamData.member1.name,
-        profileId: teamData.member1.id
+        personId: teamData.member1.id
       });
     }
     if (teamData.member2) {
       allMembers.push({
         id: teamData.member2.id,
         name: teamData.member2.name,
-        profileId: teamData.member2.id
+        personId: teamData.member2.id
       });
     }
     if (teamData.member3) {
       allMembers.push({
         id: teamData.member3.id,
         name: teamData.member3.name,
-        profileId: teamData.member3.id
+        personId: teamData.member3.id
       });
     }
 
     // Add junction table members (avoid duplicates)
     const existingIds = new Set(allMembers.map(m => m.id));
     teamMemberships?.forEach(tm => {
-      if (!existingIds.has(tm.profiles.id)) {
+      if (!existingIds.has(tm.persons.id)) {
         allMembers.push({
-          id: tm.profiles.id,
-          name: tm.profiles.name,
-          profileId: tm.profiles.id
+          id: tm.persons.id,
+          name: tm.persons.name,
+          personId: tm.persons.id
         });
       }
     });
@@ -157,15 +157,15 @@ class TeamService {
         universities (
           name
         ),
-        member1:profiles!teams_member1_id_fkey (
+        member1:persons!teams_person1_id_fkey (
           id,
           name
         ),
-        member2:profiles!teams_member2_id_fkey (
+        member2:persons!teams_person2_id_fkey (
           id,
           name
         ),
-        member3:profiles!teams_member3_id_fkey (
+        member3:persons!teams_person3_id_fkey (
           id,
           name
         )
@@ -181,7 +181,7 @@ class TeamService {
       .from('team_members')
       .select(`
         team_id,
-        profiles (
+        persons (
           id,
           name
         )
@@ -219,21 +219,21 @@ class TeamService {
         allMembers.push({
           id: team.member1.id,
           name: team.member1.name,
-          profileId: team.member1.id
+          personId: team.member1.id
         });
       }
       if (team.member2) {
         allMembers.push({
           id: team.member2.id,
           name: team.member2.name,
-          profileId: team.member2.id
+          personId: team.member2.id
         });
       }
       if (team.member3) {
         allMembers.push({
           id: team.member3.id,
           name: team.member3.name,
-          profileId: team.member3.id
+          personId: team.member3.id
         });
       }
 
@@ -241,11 +241,11 @@ class TeamService {
       const existingIds = new Set(allMembers.map(m => m.id));
       const teamMemberships = allTeamMemberships?.filter(tm => tm.team_id === team.id) || [];
       teamMemberships.forEach(tm => {
-        if (!existingIds.has(tm.profiles.id)) {
+        if (!existingIds.has(tm.persons.id)) {
           allMembers.push({
-            id: tm.profiles.id,
-            name: tm.profiles.name,
-            profileId: tm.profiles.id
+            id: tm.persons.id,
+            name: tm.persons.name,
+            personId: tm.persons.id
           });
         }
       });
@@ -288,9 +288,9 @@ class TeamService {
       .insert({
         name: team.name,
         university_id: universityId,
-        member1_id: team.members[0]?.profileId || null,
-        member2_id: team.members[1]?.profileId || null,
-        member3_id: team.members[2]?.profileId || null
+        person1_id: team.members[0]?.personId || null,
+        person2_id: team.members[1]?.personId || null,
+        person3_id: team.members[2]?.personId || null
       })
       .select('id')
       .single();
@@ -303,7 +303,7 @@ class TeamService {
     if (team.members.length > 0) {
       const memberInserts = team.members.map(member => ({
         team_id: newTeam.id,
-        profile_id: member.profileId
+        person_id: member.personId
       }));
 
       const { error: membersError } = await supabase
@@ -334,9 +334,9 @@ class TeamService {
       .update({
         name: team.name,
         university_id: universityId,
-        member1_id: team.members[0]?.profileId || null,
-        member2_id: team.members[1]?.profileId || null,
-        member3_id: team.members[2]?.profileId || null
+        person1_id: team.members[0]?.personId || null,
+        person2_id: team.members[1]?.personId || null,
+        person3_id: team.members[2]?.personId || null
       })
       .eq('id', id);
     
@@ -355,7 +355,7 @@ class TeamService {
     if (team.members.length > 0) {
       const memberInserts = team.members.map(member => ({
         team_id: id,
-        profile_id: member.profileId
+        person_id: member.personId
       }));
 
       const { error: membersError } = await supabase

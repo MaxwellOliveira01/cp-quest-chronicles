@@ -1,16 +1,17 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
 import { eventService } from "@/services/eventService";
-import { profileService } from "@/services/profileService";
-import type { EventFullModel, ProfileFullModel } from "../../../api/models";
+import { personService } from "@/services/personService";
+import type { EventFullModel, PersonFullModel } from "../../../api/models";
 
 const AdminEvents = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState<EventFullModel[]>([]);
-  const [profiles, setProfiles] = useState<ProfileFullModel[]>([]);
+  const [persons, setPersons] = useState<PersonFullModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventFullModel | null>(null);
@@ -25,12 +26,12 @@ const AdminEvents = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [eventsData, profilesData] = await Promise.all([
+        const [eventsData, personsData] = await Promise.all([
           eventService.getAll(),
-          profileService.getAll()
+          personService.getAll()
         ]);
         setEvents(eventsData);
-        setProfiles(profilesData);
+        setPersons(personsData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -45,12 +46,12 @@ const AdminEvents = () => {
     e.preventDefault();
     
     const selectedStudents = formData.students.map(studentId => {
-      const profile = profiles.find(p => p.id === studentId);
+      const person = persons.find(p => p.id === studentId);
       return {
         id: studentId,
-        name: profile?.name || "",
-        handle: profile?.handle || "",
-        university: profile?.university || ""
+        name: person?.name || "",
+        handle: person?.handle || "",
+        university: person?.university || ""
       };
     });
     
@@ -105,10 +106,10 @@ const AdminEvents = () => {
     }
   };
 
-  const handleStudentToggle = (profileId: string) => {
-    const students = formData.students.includes(profileId)
-      ? formData.students.filter(id => id !== profileId)
-      : [...formData.students, profileId];
+  const handleStudentToggle = (personId: string) => {
+    const students = formData.students.includes(personId)
+      ? formData.students.filter(id => id !== personId)
+      : [...formData.students, personId];
     setFormData({ ...formData, students });
   };
 
@@ -202,15 +203,15 @@ const AdminEvents = () => {
                     Participants
                   </label>
                   <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
-                    {profiles.map((profile) => (
-                      <label key={profile.id} className="flex items-center space-x-2 p-1">
+                    {persons.map((person) => (
+                      <label key={person.id} className="flex items-center space-x-2 p-1">
                         <input
                           type="checkbox"
-                          checked={formData.students.includes(profile.id)}
-                          onChange={() => handleStudentToggle(profile.id)}
+                          checked={formData.students.includes(person.id)}
+                          onChange={() => handleStudentToggle(person.id)}
                           className="rounded"
                         />
-                        <span className="text-sm">{profile.name} ({profile.handle})</span>
+                        <span className="text-sm">{person.name} ({person.handle})</span>
                       </label>
                     ))}
                   </div>
