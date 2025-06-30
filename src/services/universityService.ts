@@ -1,4 +1,3 @@
-
 import { UniversityFullModel, UniversitySearchModel } from "../../api/models";
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,7 +16,7 @@ class UniversityService {
 
     // Get students from this university
     const { data: students, error: studentsError } = await supabase
-      .from('profiles')
+      .from('persons')
       .select('id, name, handle')
       .eq('university_id', id);
 

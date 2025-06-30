@@ -94,7 +94,7 @@ class TeamService {
     // Add junction table members (avoid duplicates)
     const existingIds = new Set(allMembers.map(m => m.id));
     teamMemberships?.forEach(tm => {
-      if (!existingIds.has(tm.persons.id)) {
+      if (tm.persons && !existingIds.has(tm.persons.id)) {
         allMembers.push({
           id: tm.persons.id,
           name: tm.persons.name,
@@ -241,7 +241,7 @@ class TeamService {
       const existingIds = new Set(allMembers.map(m => m.id));
       const teamMemberships = allTeamMemberships?.filter(tm => tm.team_id === team.id) || [];
       teamMemberships.forEach(tm => {
-        if (!existingIds.has(tm.persons.id)) {
+        if (tm.persons && !existingIds.has(tm.persons.id)) {
           allMembers.push({
             id: tm.persons.id,
             name: tm.persons.name,
