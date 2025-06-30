@@ -68,22 +68,22 @@ class TeamService {
     // Combine direct members and junction table members
     const allMembers = [];
     
-    // Add direct members if they exist
-    if (teamData.member1) {
+    // Add direct members if they exist - these are single objects, not arrays
+    if (teamData.member1 && !Array.isArray(teamData.member1)) {
       allMembers.push({
         id: teamData.member1.id,
         name: teamData.member1.name,
         personId: teamData.member1.id
       });
     }
-    if (teamData.member2) {
+    if (teamData.member2 && !Array.isArray(teamData.member2)) {
       allMembers.push({
         id: teamData.member2.id,
         name: teamData.member2.name,
         personId: teamData.member2.id
       });
     }
-    if (teamData.member3) {
+    if (teamData.member3 && !Array.isArray(teamData.member3)) {
       allMembers.push({
         id: teamData.member3.id,
         name: teamData.member3.name,
@@ -214,22 +214,22 @@ class TeamService {
       // Combine direct members and junction table members
       const allMembers = [];
       
-      // Add direct members if they exist
-      if (team.member1) {
+      // Add direct members if they exist - these are single objects, not arrays
+      if (team.member1 && !Array.isArray(team.member1)) {
         allMembers.push({
           id: team.member1.id,
           name: team.member1.name,
           personId: team.member1.id
         });
       }
-      if (team.member2) {
+      if (team.member2 && !Array.isArray(team.member2)) {
         allMembers.push({
           id: team.member2.id,
           name: team.member2.name,
           personId: team.member2.id
         });
       }
-      if (team.member3) {
+      if (team.member3 && !Array.isArray(team.member3)) {
         allMembers.push({
           id: team.member3.id,
           name: team.member3.name,
