@@ -33,7 +33,13 @@ export async function fetchTeamById(id: string): Promise<RawTeamData> {
     throw new Error('Team not found');
   }
   
-  return data;
+  // Transform the data to match RawTeamData type
+  return {
+    ...data,
+    member1: Array.isArray(data.member1) ? data.member1[0] || null : data.member1,
+    member2: Array.isArray(data.member2) ? data.member2[0] || null : data.member2,
+    member3: Array.isArray(data.member3) ? data.member3[0] || null : data.member3,
+  };
 }
 
 export async function fetchAllTeams(): Promise<RawTeamData[]> {
@@ -62,7 +68,13 @@ export async function fetchAllTeams(): Promise<RawTeamData[]> {
     throw new Error('Failed to fetch teams');
   }
   
-  return data || [];
+  // Transform the data to match RawTeamData[] type
+  return (data || []).map(team => ({
+    ...team,
+    member1: Array.isArray(team.member1) ? team.member1[0] || null : team.member1,
+    member2: Array.isArray(team.member2) ? team.member2[0] || null : team.member2,
+    member3: Array.isArray(team.member3) ? team.member3[0] || null : team.member3,
+  }));
 }
 
 export async function fetchTeamMembers(teamId: string): Promise<TeamMembership[]> {
