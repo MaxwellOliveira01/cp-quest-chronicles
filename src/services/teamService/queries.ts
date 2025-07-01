@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { RawTeamData, TeamMembership, ContestPerformance } from './types';
 
@@ -24,10 +23,14 @@ export async function fetchTeamById(id: string): Promise<RawTeamData> {
       )
     `)
     .eq('id', id)
-    .single();
+    .maybeSingle();
   
   if (error) {
     throw new Error('Failed to fetch team');
+  }
+  
+  if (!data) {
+    throw new Error('Team not found');
   }
   
   return data;
@@ -59,7 +62,7 @@ export async function fetchAllTeams(): Promise<RawTeamData[]> {
     throw new Error('Failed to fetch teams');
   }
   
-  return data;
+  return data || [];
 }
 
 export async function fetchTeamMembers(teamId: string): Promise<TeamMembership[]> {
