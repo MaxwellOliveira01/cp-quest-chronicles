@@ -5,21 +5,21 @@ const apiRoute: string = 'http://localhost:5169/person';
 class PersonService {
 
   async get(id: string): Promise<PersonFullModel> {
-    let response = await fetch(`${apiRoute}/${id}`);
+    const response = await fetch(`${apiRoute}/${id}`);
     if (!response.ok) throw new Error('Failed to fetch person');
-    let data: PersonFullModel = await response.json();
+    const data: PersonFullModel = await response.json();
     return data;
   }
 
   async list(prefix: string, universityFilter?: string): Promise<PersonSearchModel[]> {
-    let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
+    const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
     if (!response.ok) throw new Error('Failed to fetch persons');
-    let data: PersonSearchModel[] = await response.json();
+    const data: PersonSearchModel[] = await response.json();
     return data;
   }
 
   async create(data: CreatePersonModel): Promise<void> {
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -30,7 +30,7 @@ class PersonService {
   }
 
   async update(data: UpdatePersonModel): Promise<void> {    
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -41,7 +41,7 @@ class PersonService {
   }
 
   async delete(id: string): Promise<void> {
-    let response = await fetch(`${apiRoute}/${id}`, {
+    const response = await fetch(`${apiRoute}/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete person');
