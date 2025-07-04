@@ -9,18 +9,17 @@ export interface UniversityModel {
 }
 
 export interface UniversityFullModel extends UniversityModel {
-    local: LocalModel;
+    local?: LocalModel;
     students: PersonModel[];
     teams: TeamModel[];
-    // contests: ContestModel[];
 }
 
-export interface CreateUniversityModel {
+export interface UniversityCreateModel {
     name: string;
     alias: string;
     localId?: string;
 }
 
-export interface UpdateUniversityModel extends CreateUniversityModel {
+export interface UniversitUpdateModel extends UniversityCreateModel {
     id: string;
 }

@@ -1,143 +1,51 @@
 
-import { EventFullModel, EventSearchModel } from "../../api/models";
-import { supabase } from '@/integrations/supabase/client';
+import { EventCreateModel, EventFullModel, EventModel, EventUpdateModel } from "api/event";
+
+const apiRoute: string = 'http://localhost:5169/api/events';
 
 class EventService {
 
   async get(id: string): Promise<EventFullModel> {
-    // Get event data
-    const { data: eventData, error: eventError } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (eventError) {
-      throw new Error('Failed to fetch event');
-    }
-
-    // Get participants (students) for this event
-    const { data: participants, error: participantsError } = await supabase
-      .from('person_events')
-      .select(`
-        persons (
-          id,
-          name,
-          handle,
-          universities (
-            name
-          )
-        )
-      `)
-      .eq('event_id', id);
-    
-    if (participantsError) {
-      throw new Error('Failed to fetch event participants');
-    }
-    
-    return {
-      id: eventData.id,
-      name: eventData.name,
-      location: eventData.location,
-      startDate: eventData.start_date,
-      endDate: eventData.end_date,
-      students: participants?.map(p => ({
-        id: p.persons.id,
-        name: p.persons.name,
-        handle: p.persons.handle,
-        university: p.persons.universities?.name || ''
-      })) || []
-    };
+      let response = await fetch(`${apiRoute}/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch person');
+      let data: EventFullModel = await response.json();
+      return data;
   }
 
-  async list(prefix: string, dateFilter?: { startDate?: string; endDate?: string }): Promise<EventSearchModel[]> {
-    let query = supabase
-      .from('events')
-      .select('*')
-      .ilike('name', `%${prefix}%`)
-      .limit(10);
-
-    if (dateFilter?.startDate) {
-      query = query.gte('start_date', dateFilter.startDate);
-    }
-    if (dateFilter?.endDate) {
-      query = query.lte('end_date', dateFilter.endDate);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      throw new Error('Failed to fetch events');
-    }
-    
-    return data.map(event => ({
-      id: event.id,
-      name: event.name,
-      location: event.location,
-      startDate: event.start_date,
-      endDate: event.end_date
-    }));
+  async list(prefix: string, dateFilter?: { startDate?: string; endDate?: string }): Promise<EventModel[]> {
+    let response = await fetch(`${apiRoute}/list`);
+        if (!response.ok) throw new Error('Failed to fetch events');
+        let data: EventModel[] = await response.json();
+        return data;
   }
 
-  async getAll(): Promise<EventFullModel[]> {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*');
-    
-    if (error) {
-      throw new Error('Failed to fetch events');
-    }
-    
-    return data.map(event => ({
-      id: event.id,
-      name: event.name,
-      location: event.location,
-      startDate: event.start_date,
-      endDate: event.end_date,
-      students: []
-    }));
-  }
-
-  async create(event: Omit<EventFullModel, 'id' | 'students'>): Promise<void> {
-    const { error } = await supabase
-      .from('events')
-      .insert({
-        name: event.name,
-        location: event.location,
-        start_date: event.startDate,
-        end_date: event.endDate
+  async create(data: EventCreateModel): Promise<void> {
+      let response = await fetch(apiRoute, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
       });
-    
-    if (error) {
-      throw new Error('Failed to create event');
-    }
+    if (!response.ok) throw new Error('Failed to create event');
   }
 
-  async update(id: string, event: Omit<EventFullModel, 'id' | 'students'>): Promise<void> {
-    const { error } = await supabase
-      .from('events')
-      .update({
-        name: event.name,
-        location: event.location,
-        start_date: event.startDate,
-        end_date: event.endDate
-      })
-      .eq('id', id);
-    
-    if (error) {
-      throw new Error('Failed to update event');
-    }
+  async update(data: EventUpdateModel): Promise<void> {
+     let response = await fetch(apiRoute, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create event');
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      throw new Error('Failed to delete event');
-    }
+    let response = await fetch(`${apiRoute}/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete event');
   }
   
 }

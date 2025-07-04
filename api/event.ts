@@ -4,8 +4,8 @@ import { PersonModel } from "./person";
 export interface EventModel {
     id: string;
     name: string;
-    start?: Date;
-    end?: Date;
+    start?: string;
+    end?: string;
     description?: string;
     websiteUrl?: string;
 }
@@ -17,8 +17,8 @@ export interface EventFullModel extends EventModel {
 
 export interface EventCreateModel {
     name: string;
-    start: Date;
-    end: Date;
+    start?: string;
+    end?: string;
     description?: string;
     websiteUrl?: string;
     localId?: string;

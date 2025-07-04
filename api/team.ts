@@ -1,3 +1,4 @@
+import { ContestModel } from "./contest";
 import { PersonModel } from "./person";
 import { UniversityModel } from "./university";
 
@@ -7,17 +8,17 @@ export interface TeamModel {
 }
 
 export interface TeamFullModel extends TeamModel {
-    members: PersonModel[];
     university?: UniversityModel;
-    // contests: ContestModel[];
+    members: PersonModel[];
+    contests: ContestModel[];
 }
 
-export interface CreateTeamModel {
+export interface TeamCreateModel {
     name: string;
     universityId?: string;
     memberIds: string[];
 }
 
-export interface UpdateTeamModel extends CreateTeamModel {
+export interface TeamUpdateModel extends TeamCreateModel {
     id: string;
 }

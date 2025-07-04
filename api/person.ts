@@ -1,6 +1,7 @@
 import { EventModel } from "./event";
 import { TeamModel } from "./team";
 import { UniversityModel } from "./university";
+import { ContestModel } from "./contest";
 
 export interface PersonModel {
     id: string;
@@ -16,15 +17,15 @@ export interface PersonFullModel extends PersonModel {
     university?: UniversityModel;
     teams: TeamModel[];
     events: EventModel[];
-    // contest: ContestModel[];
+    contest: ContestModel[];
 }
 
-export interface CreatePersonModel {
+export interface PersonCreateModel {
     name: string;
     handle: string;
     universityId?: string;
 }
 
-export interface UpdatePersonModel extends CreatePersonModel {
+export interface PersonUpdateModel extends PersonCreateModel {
     id: string;
 }

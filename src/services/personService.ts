@@ -1,6 +1,6 @@
-import { PersonFullModel, CreatePersonModel, PersonSearchModel, UpdatePersonModel } from '../../api/person';
+import { PersonFullModel, PersonCreateModel, PersonSearchModel, PersonUpdateModel } from '../../api/person';
 
-const apiRoute: string = 'http://localhost:5169/person';
+const apiRoute: string = 'http://localhost:5169/api/persons';
 
 class PersonService {
 
@@ -18,8 +18,8 @@ class PersonService {
     return data;
   }
 
-  async create(data: CreatePersonModel): Promise<void> {
-    const response = await fetch(apiRoute, {
+  async create(data: PersonCreateModel): Promise<void> {
+    let response = await fetch(apiRoute, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -29,15 +29,15 @@ class PersonService {
     if (!response.ok) throw new Error('Failed to create person');
   }
 
-  async update(data: UpdatePersonModel): Promise<void> {    
-    const response = await fetch(apiRoute, {
+  async update(data: PersonUpdateModel): Promise<void> {    
+    let response = await fetch(apiRoute, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error('Failed to create person');
+    if (!response.ok) throw new Error('Failed to update person');
   }
 
   async delete(id: string): Promise<void> {
