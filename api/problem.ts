@@ -3,13 +3,13 @@ import { PersonModel } from "./person";
 
 export interface ProblemModel {
     id: string;
+    contestId: string;
     name: string;
     label: string;
     order: number;
 }
 
 export interface ProblemFullModel extends ProblemModel {
-    // statement: ??
     setter?: PersonModel;
     contest?: ContestModel;
 }

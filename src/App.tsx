@@ -21,6 +21,7 @@ import AdminContests from "./pages/admin/AdminContests";
 import AdminTeams from "./pages/admin/AdminTeams";
 import AdminEvents from "./pages/admin/AdminEvents";
 import AdminLogin from "./pages/admin/AdminLogin";
+import AdminProblems from "./pages/admin/AdminProblems";
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
         <Route path="/admin/events" element={<AdminEvents />} />
         <Route path="/admin/login" element={<AdminLogin />} />
       
+        <Route path="/admin/problems" element={<AdminProblems />} />
       </Routes>
       <Toaster />
     </BrowserRouter>

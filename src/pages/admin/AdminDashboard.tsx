@@ -27,6 +27,12 @@ const AdminDashboard = () => {
       path: "/admin/teams"
     },
     {
+      name: "Problems",
+      icon: Trophy,
+      description: "Manage problems",
+      path: "/admin/problems"
+    },
+    {
       name: "Contests",
       icon: Trophy,
       description: "Manage contests",
