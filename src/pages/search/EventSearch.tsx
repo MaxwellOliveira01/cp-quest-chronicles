@@ -29,7 +29,6 @@ const EventSearch = () => {
       const results = await eventService.filter(
         searchTerm.trim(), 
       );
-      console.log(results);
       setEvents(results);
     } catch (error) {
       console.error("Error searching events:", error);
@@ -60,25 +59,39 @@ const EventSearch = () => {
             <CardTitle>Search Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Name
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search events..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event Name
+              </label>
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
               </div>
             </div>
           </CardContent>
         </Card>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event) => (
+            <Card key={event.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/event/${event.id}`)}>
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-600 hover:text-blue-800">
+                  {event.name}
+                  <p className="text-sm text-gray-600">{new Date(event.start).toDateString()} - {new Date(event.end).toDateString()}</p>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">{event.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {loading && (
           <div className="flex justify-center py-8">
@@ -86,7 +99,7 @@ const EventSearch = () => {
           </div>
         )}
 
-        {!loading && events.length === 0 && (searchTerm.trim()) && (
+        {!loading && events.length === 0 && searchTerm.trim() && (
           <Card>
             <CardContent className="text-center py-8">
               <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
