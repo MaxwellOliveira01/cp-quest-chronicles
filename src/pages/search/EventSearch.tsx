@@ -83,7 +83,9 @@ const EventSearch = () => {
               <CardHeader>
                 <CardTitle className="text-lg text-blue-600 hover:text-blue-800">
                   {event.name}
-                  <p className="text-sm text-gray-600">{new Date(event.start).toDateString()} - {new Date(event.end).toDateString()}</p>
+                  {(event.start && event.end) && (
+                    <p className="text-sm text-gray-600">{new Date(event.start).toDateString()} - {new Date(event.end).toDateString()}</p>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>

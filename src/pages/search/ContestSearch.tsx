@@ -88,6 +88,13 @@ const ContestSearch = () => {
                       </p>
                     </div>
                   </div>
+                  <div>
+                    {(contest.startDate) && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      {new Date(contest.startDate).toLocaleDateString()}
+                    </p>
+                    )}
+                  </div>
                 </Link>
               ))}
             </div>
