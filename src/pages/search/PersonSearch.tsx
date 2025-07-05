@@ -22,7 +22,7 @@ const PersonSearch = () => {
     const loadUniversities = async () => {
       try {
         setLoading(true);
-        const universityData = await universityService.getAll();
+        const universityData = await universityService.list();
         setUniversities(universityData);
       } catch (error) {
         console.error("Error loading universities:", error);
