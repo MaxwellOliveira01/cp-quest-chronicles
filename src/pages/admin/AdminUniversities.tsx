@@ -4,67 +4,81 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
 import { universityService } from "@/services/universityService";
-import type { UniversityFullModel } from "../../../api/models";
+import { localService } from "@/services/localService";
+import { UniversityModel, UniversityFullModel } from "../../../api/university";
+import { LocalModel } from "../../../api/local";
 
 const AdminUniversities = () => {
   const navigate = useNavigate();
-  const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUniversity, setEditingUniversity] = useState<UniversityFullModel | null>(null);
+  const [locals, setLocals] = useState<LocalModel[]>([]);
   const [formData, setFormData] = useState({
     name: "",
-    location: ""
+    alias: "",
+    localId: ""
   });
 
   useEffect(() => {
-    const fetchUniversities = async () => {
+    const fetchUniversitiesAndLocals = async () => {
       try {
-        const universitiesData = await universityService.getAll();
+        const [universitiesData, localsData] = await Promise.all([
+          universityService.getAll(),
+          localService.getAll()
+        ]);
         setUniversities(universitiesData);
+        setLocals(localsData);
       } catch (error) {
-        console.error("Error fetching universities:", error);
+        console.error("Error fetching universities or locals:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchUniversities();
+    fetchUniversitiesAndLocals();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       if (editingUniversity) {
-        await universityService.update(editingUniversity.id, {
+        await universityService.update({
+          id: editingUniversity.id,
           name: formData.name,
-          location: formData.location
+          alias: formData.alias,
+          localId: formData.localId || undefined
         });
       } else {
         await universityService.create({
           name: formData.name,
-          location: formData.location
+          alias: formData.alias,
+          localId: formData.localId || undefined
         });
       }
-      
       const universitiesData = await universityService.getAll();
       setUniversities(universitiesData);
       setIsFormOpen(false);
       setEditingUniversity(null);
-      setFormData({ name: "", location: "" });
+      setFormData({ name: "", alias: "", localId: "" });
     } catch (error) {
       console.error("Error saving university:", error);
     }
   };
 
-  const handleEdit = (university: UniversityFullModel) => {
-    setEditingUniversity(university);
-    setFormData({
-      name: university.name,
-      location: university.location
-    });
-    setIsFormOpen(true);
+  const handleEdit = async (university: UniversityModel) => {
+    try {
+      const fullUniversity = await universityService.get(university.id);
+      setEditingUniversity(fullUniversity);
+      setFormData({
+        name: fullUniversity.name,
+        alias: fullUniversity.alias,
+        localId: fullUniversity.local?.id ?? ""
+      });
+      setIsFormOpen(true);
+    } catch (error) {
+      console.error("Error fetching university details:", error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -128,15 +142,32 @@ const AdminUniversities = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location
+                    Alias
                   </label>
                   <input
                     type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    value={formData.alias}
+                    onChange={(e) => setFormData({ ...formData,alias: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Local
+                  </label>
+                  <select
+                    value={formData.localId}
+                    onChange={e => setFormData({ ...formData, localId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No Local</option>
+                    {locals.map(local => (
+                      <option key={local.id} value={local.id}>
+                        {local.city} - {local.state}, {local.country}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex gap-4">
                   <Button type="submit">
@@ -148,7 +179,7 @@ const AdminUniversities = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingUniversity(null);
-                      setFormData({ name: "", location: "" });
+                      setFormData({ name: "", alias: "", localId: "" });
                     }}
                   >
                     Cancel
@@ -168,8 +199,7 @@ const AdminUniversities = () => {
               {universities.map((university) => (
                 <div key={university.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
-                    <h3 className="font-semibold">{university.name}</h3>
-                    <p className="text-sm text-gray-600">{university.location}</p>
+                    <h3 className="font-semibold">{university.name} - {university.alias}</h3>
                   </div>
                   <div className="flex gap-2">
                     <Button
