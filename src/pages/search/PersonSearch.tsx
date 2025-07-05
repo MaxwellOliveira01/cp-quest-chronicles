@@ -21,10 +21,13 @@ const PersonSearch = () => {
     // Load universities for filter
     const loadUniversities = async () => {
       try {
+        setLoading(true);
         const universityData = await universityService.getAll();
         setUniversities(universityData);
       } catch (error) {
         console.error("Error loading universities:", error);
+      } finally {
+        setLoading(false);
       }
     };
     loadUniversities();
@@ -43,7 +46,8 @@ const PersonSearch = () => {
     
     setLoading(true);
     try {
-      const results = await personService.listForSearch(searchTerm.trim(), universityFilter || undefined);
+      console.log(`Searching persons with term: "${searchTerm.trim()}" and universityFilter: "${universityFilter ?? 'All'}"`);
+      const results = await personService.listForSearch(searchTerm.trim(), universityFilter ?? undefined);
       setPersons(results);
     } catch (error) {
       console.error("Error searching persons:", error);
@@ -108,7 +112,7 @@ const PersonSearch = () => {
                 >
                   <option value="">All Universities</option>
                   {universities.map((university) => (
-                    <option key={university.id} value={university.name}>
+                    <option key={university.id} value={university.id}>
                       {university.name}
                     </option>
                   ))}
@@ -144,7 +148,9 @@ const PersonSearch = () => {
                 <p className="text-gray-600">@{person.handle}</p>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{person.university?.alias || 'No university'}</p>
+                <p className="text-sm text-gray-600">{person.university 
+                  ? person.university.name + ' - ' + person.university.alias
+                  : 'No university'}</p>
               </CardContent>
             </Card>
           ))}

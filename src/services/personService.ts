@@ -11,15 +11,16 @@ class PersonService {
     return data;
   }
 
-  async list(prefix: string, universityFilter?: string): Promise<PersonSearchModel[]> {
-    const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
-    if (!response.ok) throw new Error('Failed to fetch persons');
-    const data: PersonSearchModel[] = await response.json();
-    return data;
-  }
+  // async list(prefix: string, universityIdFilter?: string): Promise<PersonSearchModel[]> {
+  //   const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
+  //   if (!response.ok) throw new Error('Failed to fetch persons');
+  //   const data: PersonSearchModel[] = await response.json();
+  //   return data;
+  // }
 
-  async listForSearch(prefix: string, universityFilter?: string): Promise<PersonSearchModel[]> {
-    const response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
+  async listForSearch(prefix: string, universityIdFilter?: string): Promise<PersonSearchModel[]> {
+    const response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`
+    );
     if (!response.ok) throw new Error('Failed to fetch persons');
     const data: PersonSearchModel[] = await response.json();
     return data;

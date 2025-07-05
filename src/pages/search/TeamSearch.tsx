@@ -12,7 +12,7 @@ import { UniversityModel } from "api/university";
 const TeamSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [universityFilter, setUniversityFilter] = useState("");
+  const [universityFilter, setUniversityFilter] = useState(null as string | null);
   const [teams, setTeams] = useState<TeamSearchModel[]>([]);
   const [universities, setUniversities] = useState<UniversityModel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,11 +20,14 @@ const TeamSearch = () => {
   useEffect(() => {
     // Load universities for filter
     const loadUniversities = async () => {
+      setLoading(true);
       try {
         const universityData = await universityService.getAll();
         setUniversities(universityData);
       } catch (error) {
         console.error("Error loading universities:", error);
+      } finally {
+        setLoading(false);
       }
     };
     loadUniversities();
@@ -43,7 +46,7 @@ const TeamSearch = () => {
     
     setLoading(true);
     try {
-      const results = await teamService.list(searchTerm.trim(), universityFilter || undefined);
+      const results = await teamService.listForSearch(searchTerm.trim(), universityFilter ?? undefined);
       setTeams(results);
     } catch (error) {
       console.error("Error searching teams:", error);
@@ -108,7 +111,7 @@ const TeamSearch = () => {
                 >
                   <option value="">All Universities</option>
                   {universities.map((university) => (
-                    <option key={university.id} value={university.name}>
+                    <option key={university.id} value={university.id}>
                       {university.name}
                     </option>
                   ))}
@@ -143,7 +146,9 @@ const TeamSearch = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{team.university?.alias || 'No university'}</p>
+                <p className="text-sm text-gray-600">{team.university 
+                  ? team.university.name + ' - ' + team.university.alias
+                  : 'No university'}</p>
               </CardContent>
             </Card>
           ))}

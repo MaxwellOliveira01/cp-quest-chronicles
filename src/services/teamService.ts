@@ -11,15 +11,16 @@ class TeamService {
     return data;
   }
 
-  async list(prefix: string, universityFilter?: string): Promise<TeamModel[]> {
-    let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
-    if (!response.ok) throw new Error('Failed to fetch teams');
-    let data: TeamModel[] = await response.json();
-    return data;
-  }
+  // async list(prefix: string, universityIdFilter?: string): Promise<TeamModel[]> {
+  //   let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
+  //   if (!response.ok) throw new Error('Failed to fetch teams');
+  //   let data: TeamModel[] = await response.json();
+  //   return data;
+  // }
 
-  async listForSearch(prefix: string, universityFilter?: string): Promise<TeamSearchModel[]> {
-    let response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
+  async listForSearch(prefix: string, universityIdFilter?: string): Promise<TeamSearchModel[]> {
+    console.log(`Fetching teams with prefix: ${prefix} and universityIdFilter: ${universityIdFilter}`);
+    let response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
     if (!response.ok) throw new Error('Failed to fetch teams');
     let data: TeamSearchModel[] = await response.json();
     return data;

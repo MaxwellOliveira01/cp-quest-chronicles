@@ -16,7 +16,7 @@ const UniversitySearch = () => {
   const handleSearch = async (value: string) => {
     setSearchTerm(value);
     if (value.length > 0) {
-
+      setLoading(true);
       try {
         const universities = await universityService.listForSearch(value);
         setResults(universities);
