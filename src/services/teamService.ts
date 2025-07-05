@@ -1,4 +1,4 @@
-import { TeamCreateModel, TeamFullModel, TeamModel, TeamUpdateModel } from "api/team";
+import { TeamCreateModel, TeamFullModel, TeamModel, TeamSearchModel, TeamUpdateModel } from "api/team";
 
 const apiRoute: string = 'http://localhost:5169/api/teams';
 
@@ -15,6 +15,13 @@ class TeamService {
     let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
     if (!response.ok) throw new Error('Failed to fetch teams');
     let data: TeamModel[] = await response.json();
+    return data;
+  }
+
+  async listForSearch(prefix: string, universityFilter?: string): Promise<TeamSearchModel[]> {
+    let response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
+    if (!response.ok) throw new Error('Failed to fetch teams');
+    let data: TeamSearchModel[] = await response.json();
     return data;
   }
 

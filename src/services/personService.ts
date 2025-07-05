@@ -18,6 +18,13 @@ class PersonService {
     return data;
   }
 
+  async listForSearch(prefix: string, universityFilter?: string): Promise<PersonSearchModel[]> {
+    const response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&university=${encodeURIComponent(universityFilter || '')}`);
+    if (!response.ok) throw new Error('Failed to fetch persons');
+    const data: PersonSearchModel[] = await response.json();
+    return data;
+  }
+
   async create(data: PersonCreateModel): Promise<void> {
     let response = await fetch(apiRoute, {
       method: 'POST',

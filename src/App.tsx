@@ -1,8 +1,7 @@
 
-import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import PersonSearch from "./pages/search/PersonSearch";
 import UniversitySearch from "./pages/search/UniversitySearch";
@@ -34,19 +33,22 @@ function App() {
         <Route path="/search/contest" element={<ContestSearch />} />
         <Route path="/search/team" element={<TeamSearch />} />
         <Route path="/search/event" element={<EventSearch />} />
-        <Route path="/person/:id" element={<PersonDetails />} />
+
+        {/* <Route path="/person/:id" element={<PersonDetails />} />
         <Route path="/profile/:id" element={<ProfileDetails />} />
         <Route path="/university/:id" element={<UniversityDetails />} />
         <Route path="/contest/:id" element={<ContestDetails />} />
         <Route path="/team/:id" element={<TeamDetails />} />
-        <Route path="/event/:id" element={<EventDetails />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/event/:id" element={<EventDetails />} /> */}
+        
+        {/* <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/persons" element={<AdminPersons />} />
         <Route path="/admin/universities" element={<AdminUniversities />} />
         <Route path="/admin/contests" element={<AdminContests />} />
         <Route path="/admin/teams" element={<AdminTeams />} />
         <Route path="/admin/events" element={<AdminEvents />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} /> */}
+      
       </Routes>
       <Toaster />
     </BrowserRouter>

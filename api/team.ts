@@ -13,6 +13,10 @@ export interface TeamFullModel extends TeamModel {
     contests: ContestModel[];
 }
 
+export interface TeamSearchModel extends TeamModel {
+    university?: UniversityModel;
+}
+
 export interface TeamCreateModel {
     name: string;
     universityId?: string;

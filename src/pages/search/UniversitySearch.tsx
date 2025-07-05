@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { universityService } from "@/services/universityService";
-import { UniversitySearchModel } from "../../../api/models";
+import { UniversitySearchModel } from "api/university";
 
 const UniversitySearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +18,7 @@ const UniversitySearch = () => {
     if (value.length > 0) {
 
       try {
-        const universities = await universityService.list(value);
+        const universities = await universityService.listForSearch(value);
         setResults(universities);
       } catch (error) {
         console.error("Error searching universities:", error);
@@ -80,11 +80,15 @@ const UniversitySearch = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">
-                        {university.name}
+                        {university.name} - {university.alias}
                       </h3>
-                      <p className="text-gray-600">
-                        {university.location}
-                      </p>
+
+                      {university.local && (
+                        <p className="text-sm text-gray-500">
+                          {university.local.city} - {university.local.state}, {university.local.country}
+                        </p>
+                      )}
+                      
                     </div>
                   </div>
                 </Link>

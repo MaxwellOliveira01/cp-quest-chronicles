@@ -1,15 +1,15 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { ContestSearchModel } from "../../../api/models";
 import { contestService } from "@/services/contestService";
+import { ContestModel } from "api/contest";
 
 const ContestSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<ContestSearchModel[]>([]);
+  const [results, setResults] = useState<ContestModel[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 

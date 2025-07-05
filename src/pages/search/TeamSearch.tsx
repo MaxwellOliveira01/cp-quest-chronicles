@@ -6,21 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Search, Loader2, Building } from "lucide-react";
 import { teamService } from "@/services/teamService";
 import { universityService } from "@/services/universityService";
-import { TeamSearchModel, UniversitySearchModel } from "../../../api/models";
+import { TeamSearchModel } from "api/team";
+import { UniversityModel } from "api/university";
 
 const TeamSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [universityFilter, setUniversityFilter] = useState("");
   const [teams, setTeams] = useState<TeamSearchModel[]>([]);
-  const [universities, setUniversities] = useState<UniversitySearchModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityModel[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Load universities for filter
     const loadUniversities = async () => {
       try {
-        const universityData = await universityService.list("");
+        const universityData = await universityService.getAll();
         setUniversities(universityData);
       } catch (error) {
         console.error("Error loading universities:", error);
@@ -142,7 +143,7 @@ const TeamSearch = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{team.university || 'No university'}</p>
+                <p className="text-sm text-gray-600">{team.university?.alias || 'No university'}</p>
               </CardContent>
             </Card>
           ))}

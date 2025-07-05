@@ -1,4 +1,4 @@
-import { UniversityCreateModel, UniversityFullModel, UniversityModel, UniversitUpdateModel } from "api/university";
+import { UniversityCreateModel, UniversityFullModel, UniversityModel, UniversitUpdateModel, UniversitySearchModel } from "api/university";
 
 const apiRoute: string = 'http://localhost:5169/api/universities';
 
@@ -11,10 +11,21 @@ class UniversityService {
        return data;
   }
 
+  async getAll(): Promise<UniversityModel[]> {
+    return await this.list("");
+  }
+
   async list(prefix: string): Promise<UniversityModel[]> {
     let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}`);
     if (!response.ok) throw new Error('Failed to fetch universities');
     let data: UniversityModel[] = await response.json();
+    return data;
+  }
+
+  async listForSearch(prefix: string): Promise<UniversitySearchModel[]> {
+    let response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}`);
+    if (!response.ok) throw new Error('Failed to fetch universities');
+    let data: UniversitySearchModel[] = await response.json();
     return data;
   }
 

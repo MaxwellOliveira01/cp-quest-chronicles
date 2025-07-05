@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Search, Loader2, Calendar, MapPin } from "lucide-react";
 import { eventService } from "@/services/eventService";
-import { EventSearchModel } from "../../../api/models";
+import { EventModel } from "api/event";
 
 const EventSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [events, setEvents] = useState<EventSearchModel[]>([]);
+  const [events, setEvents] = useState<EventModel[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -28,6 +28,7 @@ const EventSearch = () => {
     
     setLoading(true);
     try {
+      //TODO: add filtro por local
       const results = await eventService.list(
         searchTerm.trim(), 
         startDate || endDate ? { startDate, endDate } : undefined
@@ -128,30 +129,6 @@ const EventSearch = () => {
             <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
           </div>
         )}
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <Card key={event.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/event/${event.id}`)}>
-              <CardHeader>
-                <CardTitle className="text-lg text-teal-600 hover:text-teal-800">
-                  {event.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {event.location}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {!loading && events.length === 0 && (searchTerm.trim() || startDate || endDate) && (
           <Card>

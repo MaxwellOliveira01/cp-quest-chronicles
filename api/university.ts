@@ -14,6 +14,10 @@ export interface UniversityFullModel extends UniversityModel {
     teams: TeamModel[];
 }
 
+export interface UniversitySearchModel extends UniversityModel{
+    local?: LocalModel
+}
+
 export interface UniversityCreateModel {
     name: string;
     alias: string;

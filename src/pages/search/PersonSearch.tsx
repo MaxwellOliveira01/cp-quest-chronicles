@@ -6,21 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Search, Loader2, Users } from "lucide-react";
 import { personService } from "@/services/personService";
 import { universityService } from "@/services/universityService";
-import { PersonSearchModel, UniversitySearchModel } from "../../../api/models";
+import { PersonSearchModel } from "api/person";
+import { UniversityModel } from "api/university";
 
 const PersonSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [universityFilter, setUniversityFilter] = useState("");
   const [persons, setPersons] = useState<PersonSearchModel[]>([]);
-  const [universities, setUniversities] = useState<UniversitySearchModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityModel[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Load universities for filter
     const loadUniversities = async () => {
       try {
-        const universityData = await universityService.list("");
+        const universityData = await universityService.getAll();
         setUniversities(universityData);
       } catch (error) {
         console.error("Error loading universities:", error);
@@ -42,7 +43,7 @@ const PersonSearch = () => {
     
     setLoading(true);
     try {
-      const results = await personService.list(searchTerm.trim(), universityFilter || undefined);
+      const results = await personService.listForSearch(searchTerm.trim(), universityFilter || undefined);
       setPersons(results);
     } catch (error) {
       console.error("Error searching persons:", error);
@@ -143,7 +144,7 @@ const PersonSearch = () => {
                 <p className="text-gray-600">@{person.handle}</p>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{person.university || 'No university'}</p>
+                <p className="text-sm text-gray-600">{person.university?.alias || 'No university'}</p>
               </CardContent>
             </Card>
           ))}
