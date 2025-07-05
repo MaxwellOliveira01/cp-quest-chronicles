@@ -23,6 +23,7 @@ const AdminUniversities = () => {
 
   useEffect(() => {
     const fetchUniversitiesAndLocals = async () => {
+      setLoading(true);
       try {
         const [universitiesData, localsData] = await Promise.all([
           universityService.getAll(),
@@ -41,6 +42,7 @@ const AdminUniversities = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       if (editingUniversity) {
         await universityService.update({
@@ -63,10 +65,13 @@ const AdminUniversities = () => {
       setFormData({ name: "", alias: "", localId: "" });
     } catch (error) {
       console.error("Error saving university:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEdit = async (university: UniversityModel) => {
+    setLoading(true);
     try {
       const fullUniversity = await universityService.get(university.id);
       setEditingUniversity(fullUniversity);
@@ -78,17 +83,22 @@ const AdminUniversities = () => {
       setIsFormOpen(true);
     } catch (error) {
       console.error("Error fetching university details:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this university?")) {
+      setLoading(true);
       try {
         await universityService.delete(id);
         const universitiesData = await universityService.getAll();
         setUniversities(universitiesData);
       } catch (error) {
         console.error("Error deleting university:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
