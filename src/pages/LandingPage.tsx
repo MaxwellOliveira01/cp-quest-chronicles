@@ -25,18 +25,18 @@ const LandingPage = () => {
       color: "bg-green-500"
     },
     {
-      title: "Contests",
-      description: "Browse contest results and rankings",
-      icon: Trophy,
-      path: "/search/contest",
-      color: "bg-yellow-500"
-    },
-    {
       title: "Teams",
       description: "Find teams and their achievements",
       icon: Building,
       path: "/search/team",
       color: "bg-purple-500"
+    },
+    {
+      title: "Contests",
+      description: "Browse contest results and rankings",
+      icon: Trophy,
+      path: "/search/contest",
+      color: "bg-yellow-500"
     },
     {
       title: "Events",
