@@ -19,6 +19,13 @@ class EventService {
     return data;
   }
 
+  async list(): Promise<EventModel[]> {
+    const response = await fetch(`${apiRoute}/list`);
+    if (!response.ok) throw new Error('Failed to fetch events');
+    const data: EventModel[] = await response.json();
+    return data;
+  }
+
   async create(data: EventCreateModel): Promise<void> {
       const response = await fetch(apiRoute, {
         method: 'POST',

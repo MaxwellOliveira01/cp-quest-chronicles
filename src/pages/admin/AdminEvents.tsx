@@ -6,18 +6,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
 import { eventService } from "@/services/eventService";
 import { personService } from "@/services/personService";
-import type { EventFullModel, PersonFullModel } from "../../../api/models";
+import { EventFullModel, EventModel, EventCreateModel, EventUpdateModel } from "../../../api/event";
+import { PersonModel } from "../../../api/person";
+import { LocalModel } from "../../../api/local";
+import { localService } from "@/services/localService";
 
 const AdminEvents = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<EventFullModel[]>([]);
-  const [persons, setPersons] = useState<PersonFullModel[]>([]);
+  const [events, setEvents] = useState<EventModel[]>([]);
+  const [persons, setPersons] = useState<PersonModel[]>([]);
+  const [locals, setLocals] = useState<LocalModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventFullModel | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    location: "",
+    description: "",
+    websiteUrl: "",
+    localId: "",
     startDate: "",
     endDate: "",
     students: [] as string[]
@@ -25,80 +31,96 @@ const AdminEvents = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const [eventsData, personsData] = await Promise.all([
-          eventService.getAll(),
-          personService.getAll()
+        const [eventsData, personsData, localsData] = await Promise.all([
+          eventService.list(),
+          personService.list(),
+          localService.getAll()
         ]);
         setEvents(eventsData);
         setPersons(personsData);
+        setLocals(localsData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const selectedStudents = formData.students.map(studentId => {
-      const person = persons.find(p => p.id === studentId);
-      return {
-        id: studentId,
-        name: person?.name || "",
-        handle: person?.handle || "",
-        university: person?.university || ""
-      };
-    });
-    
+    // Helper to format date as ISO 8601 with T00:00:00
+    const toIso8601 = (date: string) => {
+      if (!date) return null;
+      return `${date}T00:00:00Z`;
+    };
     try {
       if (editingEvent) {
-        await eventService.update(editingEvent.id, {
+        const updateData: EventUpdateModel = {
+          id: editingEvent.id,
           name: formData.name,
-          location: formData.location,
-          startDate: formData.startDate,
-          endDate: formData.endDate
-        });
+          description: formData.description || null,
+          websiteUrl: formData.websiteUrl || null,
+          start: formData.startDate ? toIso8601(formData.startDate) : null,
+          end: formData.endDate ? toIso8601(formData.endDate) : null,
+          localId: formData.localId || null,
+          participantIds: formData.students ?? []
+        };
+        await eventService.update(updateData);
       } else {
-        await eventService.create({
+        const createData: EventCreateModel = {
           name: formData.name,
-          location: formData.location,
-          startDate: formData.startDate,
-          endDate: formData.endDate
-        });
+          description: formData.description || null,
+          websiteUrl: formData.websiteUrl || null,
+          start: formData.startDate ? toIso8601(formData.startDate) : null,
+          end: formData.endDate ? toIso8601(formData.endDate) : null,
+          localId: formData.localId || null,
+          participantIds: formData.students ?? []
+        };
+        await eventService.create(createData);
       }
-      
-      const eventsData = await eventService.getAll();
+      const eventsData = await eventService.list();
       setEvents(eventsData);
       setIsFormOpen(false);
       setEditingEvent(null);
-      setFormData({ name: "", location: "", startDate: "", endDate: "", students: [] });
+      setFormData({ name: "", description: "", websiteUrl: "", localId: "", startDate: "", endDate: "", students: [] });
     } catch (error) {
       console.error("Error saving event:", error);
     }
   };
 
-  const handleEdit = (event: EventFullModel) => {
-    setEditingEvent(event);
-    setFormData({
-      name: event.name,
-      location: event.location,
-      startDate: event.startDate,
-      endDate: event.endDate,
-      students: event.students.map(s => s.id)
-    });
-    setIsFormOpen(true);
+  const handleEdit = async (eventId: string) => {
+    try {
+      const event = await eventService.get(eventId);
+      // Parse ISO 8601 date
+      const parseDate = (iso: string | null | undefined) => {
+        if (!iso) return "";
+        return iso.split("T")[0] || "";
+      };
+      setEditingEvent(event);
+      setFormData({
+        name: event.name,
+        description: event.description || "",
+        websiteUrl: event.websiteUrl || "",
+        localId: event.local?.id ?? "",
+        startDate: parseDate(event.start),
+        endDate: parseDate(event.end),
+        students: event.participants ? event.participants.map(p => p.id) : []
+      });
+      setIsFormOpen(true);
+    } catch (error) {
+      console.error("Error fetching event details:", error);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this event?")) {
       try {
         await eventService.delete(id);
-        const eventsData = await eventService.getAll();
+        const eventsData = await eventService.list();
         setEvents(eventsData);
       } catch (error) {
         console.error("Error deleting event:", error);
@@ -162,15 +184,42 @@ const AdminEvents = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Website URL
                   </label>
                   <input
                     type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    value={formData.websiteUrl}
+                    onChange={e => setFormData({ ...formData, websiteUrl: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Local
+                  </label>
+                  <select
+                    value={formData.localId}
+                    onChange={e => setFormData({ ...formData, localId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No Local</option>
+                    {locals.map(local => (
+                      <option key={local.id} value={local.id}>
+                        {local.city} - {local.state}, {local.country}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -182,7 +231,6 @@ const AdminEvents = () => {
                       value={formData.startDate}
                       onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -194,7 +242,6 @@ const AdminEvents = () => {
                       value={formData.endDate}
                       onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                   </div>
                 </div>
@@ -226,7 +273,7 @@ const AdminEvents = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingEvent(null);
-                      setFormData({ name: "", location: "", startDate: "", endDate: "", students: [] });
+                      setFormData({ name: "", description: "", websiteUrl: "", localId: "", startDate: "", endDate: "", students: [] });
                     }}
                   >
                     Cancel
@@ -247,15 +294,17 @@ const AdminEvents = () => {
                 <div key={event.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
                     <h3 className="font-semibold">{event.name}</h3>
-                    <p className="text-sm text-gray-600">{event.location}</p>
-                    <p className="text-sm text-gray-600">{event.startDate} to {event.endDate}</p>
-                    <p className="text-sm text-gray-600">{event.students.length} participants</p>
+                    {event.start && event.end && (
+                      <p className="text-sm text-gray-600">
+                        {event.start?.slice(0, 10)} to {event.end?.slice(0, 10)}
+                    </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEdit(event)}
+                      onClick={() => handleEdit(event.id)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
