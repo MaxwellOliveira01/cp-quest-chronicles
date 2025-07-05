@@ -27,7 +27,7 @@ class PersonService {
   }
 
   async create(data: PersonCreateModel): Promise<void> {
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -38,7 +38,7 @@ class PersonService {
   }
 
   async update(data: PersonUpdateModel): Promise<void> {    
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

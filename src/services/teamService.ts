@@ -5,29 +5,29 @@ const apiRoute: string = 'http://localhost:5169/api/teams';
 class TeamService {
 
   async get(id: string): Promise<TeamFullModel> {
-    let response = await fetch(`${apiRoute}/${id}`);
+    const response = await fetch(`${apiRoute}/${id}`);
     if (!response.ok) throw new Error('Failed to fetch team');
-    let data: TeamFullModel = await response.json();
+    const data: TeamFullModel = await response.json();
     return data;
   }
 
   // async list(prefix: string, universityIdFilter?: string): Promise<TeamModel[]> {
-  //   let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
+  //   const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
   //   if (!response.ok) throw new Error('Failed to fetch teams');
-  //   let data: TeamModel[] = await response.json();
+  //   const data: TeamModel[] = await response.json();
   //   return data;
   // }
 
   async listForSearch(prefix: string, universityIdFilter?: string): Promise<TeamSearchModel[]> {
     console.log(`Fetching teams with prefix: ${prefix} and universityIdFilter: ${universityIdFilter}`);
-    let response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
+    const response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
     if (!response.ok) throw new Error('Failed to fetch teams');
-    let data: TeamSearchModel[] = await response.json();
+    const data: TeamSearchModel[] = await response.json();
     return data;
   }
 
   async create(data: TeamCreateModel): Promise<void> {
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -38,7 +38,7 @@ class TeamService {
   }
 
   async update(data: TeamUpdateModel): Promise<void> {    
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ class TeamService {
   }
 
   async delete(id: string): Promise<void> {
-    let response = await fetch(`${apiRoute}/${id}`, {
+    const response = await fetch(`${apiRoute}/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete team');

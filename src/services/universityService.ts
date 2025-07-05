@@ -5,10 +5,10 @@ const apiRoute: string = 'http://localhost:5169/api/universities';
 class UniversityService {
 
   async get(id: string): Promise<UniversityFullModel> {
-       let response = await fetch(`${apiRoute}/${id}`);
-       if (!response.ok) throw new Error('Failed to fetch university');
-       let data: UniversityFullModel = await response.json();
-       return data;
+      const response = await fetch(`${apiRoute}/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch university');
+      const data: UniversityFullModel = await response.json();
+      return data;
   }
 
   async getAll(): Promise<UniversityModel[]> {
@@ -16,21 +16,21 @@ class UniversityService {
   }
 
   async list(prefix: string): Promise<UniversityModel[]> {
-    let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}`);
+    const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}`);
     if (!response.ok) throw new Error('Failed to fetch universities');
-    let data: UniversityModel[] = await response.json();
+    const data: UniversityModel[] = await response.json();
     return data;
   }
 
   async listForSearch(prefix: string): Promise<UniversitySearchModel[]> {
-    let response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}`);
+    const response = await fetch(`${apiRoute}/list/search-model?prefix=${encodeURIComponent(prefix)}`);
     if (!response.ok) throw new Error('Failed to fetch universities');
-    let data: UniversitySearchModel[] = await response.json();
+    const data: UniversitySearchModel[] = await response.json();
     return data;
   }
 
   async create(data: UniversityCreateModel): Promise<void> {
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -41,7 +41,7 @@ class UniversityService {
   }
 
   async update(data: UniversitUpdateModel): Promise<void> {
-    let response = await fetch(apiRoute, {
+    const response = await fetch(apiRoute, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -52,7 +52,7 @@ class UniversityService {
   }
 
   async delete(id: string): Promise<void> {
-    let response = await fetch(`${apiRoute}/${id}`, {
+    const response = await fetch(`${apiRoute}/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete university');
