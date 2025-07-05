@@ -18,7 +18,7 @@ const ContestSearch = () => {
     if (value.length > 0) {
       setLoading(true);
       try {
-        const contests = await contestService.list(value);
+        const contests = await contestService.filter(value);
         setResults(contests);
       } catch (error) {
         console.error("Error searching contests:", error);

@@ -18,6 +18,13 @@ class ContestService {
         return data;
   }
 
+  async filter(pref: string): Promise<ContestModel[]> {
+    const response = await fetch(`${apiRoute}/filter?pref=${encodeURIComponent(pref)}`);
+    if (!response.ok) throw new Error('Failed to fetch contests');
+    const data: ContestModel[] = await response.json();
+    return data;
+  }
+
   async create(data: ContestCreateModel): Promise<void> {
     const response = await fetch(apiRoute, {
       method: 'POST',
