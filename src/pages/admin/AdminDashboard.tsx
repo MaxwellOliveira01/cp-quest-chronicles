@@ -9,10 +9,10 @@ const AdminDashboard = () => {
 
   const entities = [
     {
-      name: "Profiles",
+      name: "Persons",
       icon: Users,
       description: "Manage contestant profiles",
-      path: "/admin/profiles"
+      path: "/admin/persons"
     },
     {
       name: "Universities",

@@ -11,12 +11,8 @@ class UniversityService {
       return data;
   }
 
-  async getAll(): Promise<UniversityModel[]> {
-    return await this.list("");
-  }
-
-  async list(prefix: string): Promise<UniversityModel[]> {
-    const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}`);
+  async list(): Promise<UniversityModel[]> {
+    const response = await fetch(`${apiRoute}/list`);
     if (!response.ok) throw new Error('Failed to fetch universities');
     const data: UniversityModel[] = await response.json();
     return data;

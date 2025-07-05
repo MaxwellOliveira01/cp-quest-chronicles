@@ -6,27 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus, Edit, Trash, Loader2 } from "lucide-react";
 import { personService } from "@/services/personService";
 import { universityService } from "@/services/universityService";
-import type { PersonFullModel, UniversityFullModel } from "../../../api/models";
+import { PersonFullModel, PersonSearchModel, PersonCreateModel, PersonUpdateModel } from "../../../api/person";
+import { UniversityModel } from "../../../api/university";
 
 const AdminPersons = () => {
   const navigate = useNavigate();
-  const [persons, setPersons] = useState<PersonFullModel[]>([]);
-  const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
+  const [persons, setPersons] = useState<PersonSearchModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<PersonFullModel | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     handle: "",
-    university: ""
+    universityId: ""
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [personsData, universitiesData] = await Promise.all([
-          personService.getAll(),
-          universityService.getAll()
+          personService.listForSearch(""),
+          universityService.list()
         ]);
         setPersons(personsData);
         setUniversities(universitiesData);
@@ -40,49 +41,56 @@ const AdminPersons = () => {
     fetchData();
   }, []);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       if (editingPerson) {
-        await personService.update(editingPerson.id, {
+        const updateData: PersonUpdateModel = {
+          id: editingPerson.id,
           name: formData.name,
           handle: formData.handle,
-          university: formData.university
-        });
+          universityId: formData.universityId || null
+        };
+        await personService.update(updateData);
       } else {
-        await personService.create({
+        const createData: PersonCreateModel = {
           name: formData.name,
           handle: formData.handle,
-          university: formData.university
-        });
+          universityId: formData.universityId || null
+        };
+        await personService.create(createData);
       }
-      
-      const personsData = await personService.getAll();
+      const personsData = await personService.listForSearch("");
       setPersons(personsData);
       setIsFormOpen(false);
       setEditingPerson(null);
-      setFormData({ name: "", handle: "", university: "" });
+      setFormData({ name: "", handle: "", universityId: "" });
     } catch (error) {
       console.error("Error saving person:", error);
     }
   };
 
-  const handleEdit = (person: PersonFullModel) => {
-    setEditingPerson(person);
-    setFormData({
-      name: person.name,
-      handle: person.handle,
-      university: person.university
-    });
-    setIsFormOpen(true);
+  const handleEdit = async (id: string) => {
+    try {
+      const person = await personService.get(id);
+      setEditingPerson(person);
+      setFormData({
+        name: person.name,
+        handle: person.handle,
+        universityId: person.university?.id || ""
+      });
+      setIsFormOpen(true);
+    } catch (error) {
+      console.error("Error fetching person details:", error);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this person?")) {
       try {
         await personService.delete(id);
-        const personsData = await personService.getAll();
+        const personsData = await personService.list();
         setPersons(personsData);
       } catch (error) {
         console.error("Error deleting person:", error);
@@ -154,13 +162,13 @@ const AdminPersons = () => {
                     University
                   </label>
                   <select
-                    value={formData.university}
-                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                    value={formData.universityId}
+                    onChange={(e) => setFormData({ ...formData, universityId: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select University</option>
                     {universities.map((university) => (
-                      <option key={university.id} value={university.name}>
+                      <option key={university.id} value={university.id}>
                         {university.name}
                       </option>
                     ))}
@@ -176,7 +184,7 @@ const AdminPersons = () => {
                     onClick={() => {
                       setIsFormOpen(false);
                       setEditingPerson(null);
-                      setFormData({ name: "", handle: "", university: "" });
+                      setFormData({ name: "", handle: "", universityId: "" });
                     }}
                   >
                     Cancel
@@ -198,13 +206,13 @@ const AdminPersons = () => {
                   <div>
                     <h3 className="font-semibold">{person.name}</h3>
                     <p className="text-sm text-gray-600">@{person.handle}</p>
-                    <p className="text-sm text-gray-600">{person.university || 'No university'}</p>
+                    <p className="text-sm text-gray-600">{person?.university?.name || 'No university'}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEdit(person)}
+                      onClick={() => handleEdit(person.id)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
