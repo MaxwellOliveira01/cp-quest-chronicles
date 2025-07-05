@@ -41,13 +41,13 @@ function App() {
         <Route path="/team/:id" element={<TeamDetails />} />
         <Route path="/event/:id" element={<EventDetails />} /> */}
         
-        {/* <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/persons" element={<AdminPersons />} />
         <Route path="/admin/universities" element={<AdminUniversities />} />
         <Route path="/admin/contests" element={<AdminContests />} />
         <Route path="/admin/teams" element={<AdminTeams />} />
         <Route path="/admin/events" element={<AdminEvents />} />
-        <Route path="/admin/login" element={<AdminLogin />} /> */}
+        <Route path="/admin/login" element={<AdminLogin />} />
       
       </Routes>
       <Toaster />
