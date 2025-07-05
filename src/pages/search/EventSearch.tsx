@@ -3,49 +3,39 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Search, Loader2, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Search, Loader2, Calendar } from "lucide-react";
 import { eventService } from "@/services/eventService";
 import { EventModel } from "api/event";
 
 const EventSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [events, setEvents] = useState<EventModel[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (searchTerm.trim() || startDate || endDate) {
+    if (searchTerm.trim()) {
       handleSearch();
     } else {
       setEvents([]);
     }
-  }, [searchTerm, startDate, endDate]);
+  }, [searchTerm]);
 
   const handleSearch = async () => {
-    if (!searchTerm.trim() && !startDate && !endDate) return;
+    if (!searchTerm.trim()) return;
     
     setLoading(true);
     try {
-      //TODO: add filtro por local
-      const results = await eventService.list(
+      const results = await eventService.filter(
         searchTerm.trim(), 
-        startDate || endDate ? { startDate, endDate } : undefined
       );
+      console.log(results);
       setEvents(results);
     } catch (error) {
       console.error("Error searching events:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const clearFilters = () => {
-    setSearchTerm("");
-    setStartDate("");
-    setEndDate("");
-    setEvents([]);
   };
 
   return (
@@ -86,40 +76,6 @@ const EventSearch = () => {
                   />
                 </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date (From)
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date (To)
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-              
-              <div className="flex items-end">
-                <Button 
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Clear Filters
-                </Button>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -130,7 +86,7 @@ const EventSearch = () => {
           </div>
         )}
 
-        {!loading && events.length === 0 && (searchTerm.trim() || startDate || endDate) && (
+        {!loading && events.length === 0 && (searchTerm.trim()) && (
           <Card>
             <CardContent className="text-center py-8">
               <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -140,7 +96,7 @@ const EventSearch = () => {
           </Card>
         )}
 
-        {!searchTerm.trim() && !startDate && !endDate && (
+        {!searchTerm.trim() && (
           <Card>
             <CardContent className="text-center py-12">
               <Calendar className="w-24 h-24 text-gray-300 mx-auto mb-6" />
@@ -149,7 +105,7 @@ const EventSearch = () => {
                 Discover programming marathons, hackathons, and competitive programming events worldwide.
               </p>
               <p className="text-sm text-gray-500">
-                Enter an event name or select date range to start searching.
+                Enter an event name to start searching.
               </p>
             </CardContent>
           </Card>

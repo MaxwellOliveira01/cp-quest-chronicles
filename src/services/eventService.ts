@@ -12,11 +12,11 @@ class EventService {
       return data;
   }
 
-  async list(prefix: string, dateFilter?: { startDate?: string; endDate?: string }): Promise<EventModel[]> {
-    let response = await fetch(`${apiRoute}/list`);
-        if (!response.ok) throw new Error('Failed to fetch events');
-        let data: EventModel[] = await response.json();
-        return data;
+  async filter(prefix: string): Promise<EventModel[]> {
+    let response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}`);
+    if (!response.ok) throw new Error('Failed to fetch events');
+    let data: EventModel[] = await response.json();
+    return data;
   }
 
   async create(data: EventCreateModel): Promise<void> {
