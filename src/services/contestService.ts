@@ -11,9 +11,9 @@ class ContestService {
       return data;
   }
 
-  async list(prefix: string, yearFilter?: number): Promise<ContestModel[]> {
+  async list(): Promise<ContestModel[]> {
         const response = await fetch(`${apiRoute}/list`);
-        if (!response.ok) throw new Error('Failed to fetch persons');
+        if (!response.ok) throw new Error('Failed to fetch contests');
         const data: ContestModel[] = await response.json();
         return data;
   }

@@ -1,11 +1,12 @@
 import { LocalModel } from "./local";
+import { ProblemModel } from "./problem";
 
 export interface ContestModel {
     id: string;
     name: string;
     siteUrl?: string;
-    startDate?: Date;
-    endDate?: Date;
+    startDate?: string;
+    endDate?: string;
 }
 
 export interface ContestFullModel extends ContestModel {
@@ -17,8 +18,8 @@ export interface ContestFullModel extends ContestModel {
 export interface ContestCreateModel {
     name: string;
     siteUrl?: string;
-    startDate?: Date;
-    endDate?: Date;
+    startDate?: string;
+    endDate?: string;
     localId?: string
 }
 
