@@ -1,122 +1,66 @@
-
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { personService } from "@/services/personService";
-import { universityService } from "@/services/universityService";
-import { contestService } from "@/services/contestService";
 import { teamService } from "@/services/teamService";
-import type { TeamFullModel, PersonFullModel, UniversityFullModel, ContestFullModel } from "../../../api/models";
+import { TeamFullModel, TeamCreateModel, TeamUpdateModel } from "../../../api/team";
+import { PersonSearchModel } from "../../../api/person";
+import { UniversityModel } from "../../../api/university";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 
 interface TeamFormProps {
   isOpen: boolean;
   editingTeam: TeamFullModel | null;
   onClose: () => void;
   onSave: () => void;
+  persons: PersonSearchModel[];
+  universities: UniversityModel[];
 }
 
-export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps) => {
-  const [formData, setFormData] = useState({
+export const TeamForm = ({ isOpen, editingTeam, onClose, onSave, persons, universities }: TeamFormProps) => {
+  const [formData, setFormData] = useState<{
+    name: string;
+    universityId: string;
+    members: string[];
+  }>({
     name: "",
-    university: "",
-    members: [] as string[],
-    contests: [] as { contestId: string; position: number }[]
+    universityId: "",
+    members: []
   });
-  const [persons, setPersons] = useState<PersonFullModel[]>([]);
-  const [universities, setUniversities] = useState<UniversityFullModel[]>([]);
-  const [contests, setContests] = useState<ContestFullModel[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  // Load data when form opens
-  useEffect(() => {
-    if (isOpen) {
-      loadFormData();
-    }
-  }, [isOpen]);
-
-  const loadFormData = async () => {
-    setLoading(true);
-    try {
-      const [personsData, universitiesData, contestsData] = await Promise.all([
-        personService.getAll(),
-        universityService.getAll(),
-        contestService.getAll()
-      ]);
-      setPersons(personsData);
-      setUniversities(universitiesData);
-      setContests(contestsData);
-    } catch (error) {
-      console.error("Error loading form data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Reset form data when editingTeam changes
   useEffect(() => {
     if (editingTeam) {
       setFormData({
         name: editingTeam.name,
-        university: editingTeam.university,
-        members: editingTeam.members.map(m => m.personId),
-        contests: editingTeam.contests.map(c => ({
-          contestId: c.contest.id,
-          position: c.position
-        }))
+        universityId: editingTeam.university?.id || "",
+        members: editingTeam.members.map(m => m.id)
       });
     } else {
       setFormData({
         name: "",
-        university: "",
-        members: [],
-        contests: []
+        universityId: "",
+        members: []
       });
     }
   }, [editingTeam, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const selectedMembers = formData.members.map(memberId => {
-      const person = persons.find(p => p.id === memberId);
-      return { 
-        id: memberId, 
-        name: person?.name || "", 
-        personId: memberId 
-      };
-    });
-    
-    const contestPerformances = formData.contests.map(c => {
-      const contest = contests.find(contest => contest.id === c.contestId);
-      return {
-        position: c.position,
-        contest: {
-          id: c.contestId,
-          name: contest?.name || '',
-          year: contest?.year || new Date().getFullYear()
-        }
-      };
-    });
-    
     try {
       if (editingTeam) {
-        await teamService.update(editingTeam.id, {
-          ...editingTeam,
+        const updateData: TeamUpdateModel = {
+          id: editingTeam.id,
           name: formData.name,
-          university: formData.university,
-          members: selectedMembers,
-          contests: contestPerformances
-        });
+          universityId: formData.universityId || null,
+          memberIds: formData.members
+        };
+        await teamService.update(updateData);
       } else {
-        await teamService.create({
+        const createData: TeamCreateModel = {
           name: formData.name,
-          university: formData.university,
-          members: selectedMembers,
-          contests: contestPerformances
-        });
+          universityId: formData.universityId || null,
+          memberIds: formData.members
+        };
+        await teamService.create(createData);
       }
-      
       onSave();
     } catch (error) {
       console.error("Error saving team:", error);
@@ -125,54 +69,19 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
 
   const handleMemberToggle = (personId: string) => {
     const isCurrentlySelected = formData.members.includes(personId);
-    
     if (isCurrentlySelected) {
-      const members = formData.members.filter(id => id !== personId);
-      setFormData({ ...formData, members });
-    } else {
-      if (formData.members.length < 3) {
-        const members = [...formData.members, personId];
-        setFormData({ ...formData, members });
-      }
+      setFormData((prev) => ({ ...prev, members: prev.members.filter((id) => id !== personId) }));
+    } else if (formData.members.length < 3) {
+      setFormData((prev) => ({ ...prev, members: [...prev.members, personId] }));
     }
-  };
-
-  const handleContestToggle = (contestId: string) => {
-    const isSelected = formData.contests.some(c => c.contestId === contestId);
-    
-    if (isSelected) {
-      const updatedContests = formData.contests.filter(c => c.contestId !== contestId);
-      setFormData({ ...formData, contests: updatedContests });
-    } else {
-      const newContest = {
-        contestId,
-        position: 1
-      };
-      setFormData({ ...formData, contests: [...formData.contests, newContest] });
-    }
-  };
-
-  const handlePositionChange = (contestId: string, position: number) => {
-    const updatedContests = formData.contests.map(contest => {
-      if (contest.contestId === contestId) {
-        return { ...contest, position };
-      }
-      return contest;
-    });
-    setFormData({ ...formData, contests: updatedContests });
   };
 
   if (!isOpen) return null;
 
-  if (loading) {
-    return (
-      <Card className="mb-8">
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
-        </CardContent>
-      </Card>
-    );
-  }
+  const getUniversityName = (person: PersonSearchModel) => {
+    if (person.university) return person.university.name;
+    return "No university";
+  };
 
   return (
     <Card className="mb-8">
@@ -182,10 +91,11 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="team-name">
               Team Name
             </label>
             <input
+              id="team-name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -193,46 +103,43 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
               required
             />
           </div>
-          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="university-select">
               University
             </label>
             <select
-              value={formData.university}
-              onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+              id="university-select"
+              value={formData.universityId}
+              onChange={(e) => setFormData({ ...formData, universityId: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-              required
             >
               <option value="">Select University</option>
               {universities.map((university) => (
-                <option key={university.id} value={university.name}>
+                <option key={university.id} value={university.id}>
                   {university.name}
                 </option>
               ))}
             </select>
           </div>
-          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <span className="block text-sm font-medium text-gray-700 mb-2" id="team-members-label">
               Team Members (max 3)
-            </label>
-            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+            </span>
+            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2" aria-labelledby="team-members-label">
               {persons.map((person) => {
                 const isSelected = formData.members.includes(person.id);
                 const canSelect = isSelected || formData.members.length < 3;
-                
                 return (
                   <label key={person.id} className="flex items-center space-x-2 p-1">
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleMemberToggle(person.id)}
-                      disabled={!canSelect}
+                      disabled={!canSelect && !isSelected}
                       className="rounded"
                     />
-                    <span className={`text-sm ${!canSelect ? 'text-gray-400' : ''}`}>
-                      {person.name} ({person.handle}) - {person.university || 'No university'}
+                    <span className={`text-sm ${!canSelect && !isSelected ? 'text-gray-400' : ''}`}>
+                      {person.name} ({person.handle}) - {getUniversityName(person)}
                     </span>
                   </label>
                 );
@@ -240,50 +147,13 @@ export const TeamForm = ({ isOpen, editingTeam, onClose, onSave }: TeamFormProps
             </div>
             <p className="text-xs text-gray-500 mt-1">Selected: {formData.members.length}/3</p>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Contests Participated
-            </label>
-            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
-              {contests.map((contest) => (
-                <div key={contest.id} className="p-2 border-b border-gray-100">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.contests.some(c => c.contestId === contest.id)}
-                      onChange={() => handleContestToggle(contest.id)}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">{contest.name}</span>
-                  </label>
-                  {formData.contests.some(c => c.contestId === contest.id) && (
-                    <div className="mt-2 ml-6">
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Position
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={formData.contests.find(c => c.contestId === contest.id)?.position || 1}
-                        onChange={(e) => handlePositionChange(contest.id, parseInt(e.target.value) || 1)}
-                        className="w-20 px-2 py-1 text-xs border border-gray-300 rounded"
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Selected: {formData.contests.length} contests</p>
-          </div>
-          
           <div className="flex gap-4">
             <Button type="submit" disabled={formData.members.length === 0} className="bg-teal-600 hover:bg-teal-700">
               {editingTeam ? 'Update' : 'Create'} Team
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={onClose}
             >
               Cancel

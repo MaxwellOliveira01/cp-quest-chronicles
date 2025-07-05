@@ -2,15 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit, Trash } from "lucide-react";
-import type { TeamFullModel } from "../../../api/models";
+import { TeamSearchModel } from "../../../api/team";
 
 interface TeamsListProps {
-  teams: TeamFullModel[];
-  onEdit: (team: TeamFullModel) => void;
+  teams: TeamSearchModel[];
+  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
 export const TeamsList = ({ teams, onEdit, onDelete }: TeamsListProps) => {
+
+  const getUniversityName = (team: TeamSearchModel) => {
+    if (team.university) return team.university.name;
+    return "No university";
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -22,19 +28,15 @@ export const TeamsList = ({ teams, onEdit, onDelete }: TeamsListProps) => {
             <div key={team.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
                 <h3 className="font-semibold">{team.name}</h3>
-                <p className="text-sm text-gray-600">{team.university || 'No university'}</p>
-                <p className="text-sm text-gray-600">
-                  Members: {team.members.map(m => m.name).join(", ") || 'No members'}
-                </p>
-                <p className="text-sm text-gray-600">{team.contests.length} contests</p>
+                <p className="text-sm text-gray-600">{getUniversityName(team)}</p>
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onEdit(team)}
+                  onClick={() => onEdit(team.id)}
                 >
-                  <Edit className="w-4 h-4" />
+                <Edit className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="destructive"

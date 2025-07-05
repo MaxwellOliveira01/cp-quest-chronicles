@@ -6,42 +6,61 @@ import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 import { teamService } from "@/services/teamService";
 import { TeamForm } from "@/components/admin/TeamForm";
 import { TeamsList } from "@/components/admin/TeamsList";
-import type { TeamFullModel } from "../../../api/models";
 import { useToast } from "@/hooks/use-toast";
+import { TeamFullModel, TeamSearchModel } from "../../../api/team";
+import { PersonModel, PersonSearchModel } from "../../../api/person";
+import { UniversityModel } from "../../../api/university";
+import { ContestModel } from "../../../api/contest";
+import { personService } from "@/services/personService";
+import { universityService } from "@/services/universityService";
+import { contestService } from "@/services/contestService";
 
 const AdminTeams = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [teams, setTeams] = useState<TeamFullModel[]>([]);
+  const [teams, setTeams] = useState<TeamSearchModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
   const [editingTeam, setEditingTeam] = useState<TeamFullModel | null>(null);
 
+  const [persons, setPersons] = useState<PersonSearchModel[]>([]);
+  const [universities, setUniversities] = useState<UniversityModel[]>([]);
+  const [contests, setContests] = useState<ContestModel[]>([]);
+
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchAll = async () => {
+      setLoading(true);
       try {
-        const teamsData = await teamService.getAll();
+        const [teamsData, personsData, universitiesData, contestsData] = await Promise.all([
+          teamService.listForSearch(""),
+          personService.listForSearch(""),
+          universityService.list(),
+          contestService.list()
+        ]);
         setTeams(teamsData);
+        setPersons(personsData);
+        setUniversities(universitiesData);
+        setContests(contestsData);
       } catch (error) {
-        console.error("Error fetching teams:", error);
+        console.error("Error fetching data:", error);
         toast({
           title: "Error",
-          description: "Failed to fetch teams",
+          description: "Failed to fetch teams or related data",
           variant: "destructive"
         });
       } finally {
         setLoading(false);
       }
     };
-
-    fetchTeams();
+    fetchAll();
   }, [toast]);
 
   const refreshTeams = async () => {
     setActionLoading(true);
     try {
-      const teamsData = await teamService.getAll();
+      const teamsData = await teamService.listForSearch("");
       setTeams(teamsData);
       setIsFormOpen(false);
       setEditingTeam(null);
@@ -61,32 +80,35 @@ const AdminTeams = () => {
     }
   };
 
-  const handleEdit = (team: TeamFullModel) => {
+  const handleEdit = async (id: string) => {
+    const team = await teamService.get(id);
     setEditingTeam(team);
     setIsFormOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this team?")) {
-      setActionLoading(true);
-      try {
-        await teamService.delete(id);
-        const teamsData = await teamService.getAll();
-        setTeams(teamsData);
-        toast({
-          title: "Success",
-          description: "Team deleted successfully"
-        });
-      } catch (error) {
-        console.error("Error deleting team:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete team",
-          variant: "destructive"
-        });
-      } finally {
-        setActionLoading(false);
-      }
+    if (!confirm("Are you sure you want to delete this team?")) return;
+    setActionLoading(true);
+    try {
+      await teamService.delete(id);
+      // Use the same list method as initial fetch for consistency
+      const teamsData = await teamService.listForSearch("");
+      setTeams(teamsData);
+      toast({
+        title: "Success",
+        description: "Team deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete team",
+        variant: "destructive"
+      });
+    } finally {
+      setActionLoading(false);
+      setIsFormOpen(false);
+      setEditingTeam(null);
     }
   };
 
@@ -137,6 +159,9 @@ const AdminTeams = () => {
           editingTeam={editingTeam}
           onClose={handleCloseForm}
           onSave={refreshTeams}
+          persons={persons}
+          universities={universities}
+          // contests={contests}
         />
 
         <TeamsList

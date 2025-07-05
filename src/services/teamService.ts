@@ -11,12 +11,12 @@ class TeamService {
     return data;
   }
 
-  // async list(prefix: string, universityIdFilter?: string): Promise<TeamModel[]> {
-  //   const response = await fetch(`${apiRoute}/list?prefix=${encodeURIComponent(prefix)}&universityId=${universityIdFilter || ''}`);
-  //   if (!response.ok) throw new Error('Failed to fetch teams');
-  //   const data: TeamModel[] = await response.json();
-  //   return data;
-  // }
+  async list(): Promise<TeamModel[]> {
+    const response = await fetch(`${apiRoute}/list`);
+    if (!response.ok) throw new Error('Failed to fetch teams');
+    const data: TeamModel[] = await response.json();
+    return data;
+  }
 
   async listForSearch(prefix: string, universityIdFilter?: string): Promise<TeamSearchModel[]> {
     console.log(`Fetching teams with prefix: ${prefix} and universityIdFilter: ${universityIdFilter}`);
