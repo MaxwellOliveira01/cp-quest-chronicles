@@ -1,5 +1,5 @@
-import { ContestModel } from "./contest";
 import { PersonModel } from "./person";
+import { TeamResultModel } from "./teamResult";
 import { UniversityModel } from "./university";
 
 export interface TeamModel {
@@ -10,7 +10,7 @@ export interface TeamModel {
 export interface TeamFullModel extends TeamModel {
     university?: UniversityModel;
     members: PersonModel[];
-    contests: ContestModel[];
+    results: TeamResultModel[]
 }
 
 export interface TeamSearchModel extends TeamModel {

@@ -4,14 +4,16 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import ContestPerformance from "@/components/ContestPerformance";
-import { TeamFullModel } from "../../../api/models";
 import { teamService } from "@/services/teamService";
+import { TeamFullModel } from "../../../api/team";
+import { ContestModel } from "../../../api/contest";
+import { contestService } from "../../services/contestService";
 
 const TeamDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [team, setTeam] = useState<TeamFullModel | null>(null);
+  const [contests, setContests] = useState<ContestModel[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,10 +22,16 @@ const TeamDetails = () => {
       
       setLoading(true);
       try {
-        const foundTeam = await teamService.get(id);
+
+        const [foundTeam, foundContests] = await Promise.all([
+          teamService.get(id),
+          contestService.list()
+        ]);
+
         setTeam(foundTeam);
+        setContests(foundContests);
       } catch (error) {
-        console.error("Error fetching team:", error);
+        console.error("Error fetching team or contests:", error);
       } finally {
         setLoading(false);
       }
@@ -66,7 +74,9 @@ const TeamDetails = () => {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-3xl">{team.name}</CardTitle>
-            <p className="text-xl text-gray-600">{team.university}</p>
+            {team.university && (
+              <p className="text-xl text-gray-600">{team.university.name}</p>
+            )}
             <p className="text-gray-500">Team Profile</p>
           </CardHeader>
         </Card>
@@ -80,8 +90,8 @@ const TeamDetails = () => {
               {team.members.length > 0 ? (
                 <div className="space-y-3">
                   {team.members.map((member, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <Link to={`/person/${member.personId}`}>
+                    <div key={team.members[index].id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <Link to={`/person/${member.id}`}>
                         <h4 className="font-semibold text-blue-600 hover:text-blue-800">{member.name}</h4>
                       </Link>
                     </div>
@@ -100,21 +110,23 @@ const TeamDetails = () => {
               <CardTitle>Contest Participation</CardTitle>
             </CardHeader>
             <CardContent>
-              {team.contests.length > 0 ? (
+              {team.results.length > 0 ? (
                 <div className="space-y-3">
-                  {team.contests.map((performance, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <Link to={`/contest/${performance.contest.id}`}>
-                        <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                          {performance.contest.name}
-                        </h4>
-                        <p className="text-sm text-gray-600">{performance.contest.year}</p>
+                  {team.results.map((result, index) => {
+                    const contest = contests.find(c => c.id === result.contestId);
+                    return (
+                      <div key={team.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <Link to={`/contest/${result.contestId}`}>
+                          <h4 className="font-semibold text-blue-600 hover:text-blue-800">
+                            {contest ? contest.name : "Unknown Contest"}
+                          </h4>
+                        </Link>
                         <p className="text-sm font-medium text-blue-600">
-                          Position: {performance.position}
+                          Position: {result.position}
                         </p>
-                      </Link>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-4">
@@ -125,14 +137,15 @@ const TeamDetails = () => {
           </Card>
         </div>
 
-        {team.contests.length > 0 && (
+        {/* {team.contests.length > 0 && (
           <div className="mt-8">
             <ContestPerformance 
               contests={team.contests} 
               title="Team Contest Performance" 
             />
           </div>
-        )}
+        )} */}
+
       </div>
     </div>
   );

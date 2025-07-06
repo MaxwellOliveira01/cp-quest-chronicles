@@ -12,7 +12,7 @@ import { UniversityModel } from "api/university";
 const TeamSearch = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [universityFilter, setUniversityFilter] = useState(null as string | null);
+  const [universityFilter, setUniversityFilter] = useState("");
   const [teams, setTeams] = useState<TeamSearchModel[]>([]);
   const [universities, setUniversities] = useState<UniversityModel[]>([]);
   const [loading, setLoading] = useState(false);
