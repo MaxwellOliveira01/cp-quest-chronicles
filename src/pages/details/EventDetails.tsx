@@ -3,8 +3,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, MapPin, Calendar, Loader2 } from "lucide-react";
-import { EventFullModel } from "../../../api/models";
 import { eventService } from "@/services/eventService";
+import { EventFullModel } from "../../../api/event";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -64,14 +64,18 @@ const EventDetails = () => {
           <CardHeader>
             <CardTitle className="text-3xl">{event.name}</CardTitle>
             <div className="flex items-center gap-4 text-gray-600 mt-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>{event.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>{event.startDate} - {event.endDate}</span>
-              </div>
+              {event.local && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  <span>{event.local.city}, {event.local.state} - {event.local.country}</span>
+                </div>
+              )}
+              {(event.start && event.end) && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{event.start?.slice(0, 10)} - {event.end?.slice(0, 10)}</span>
+                </div>
+              )}
             </div>
           </CardHeader>
         </Card>
@@ -82,15 +86,14 @@ const EventDetails = () => {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {event.students.map((student, index) => (
+              {event.participants.map((participant, index) => (
                 <div key={index} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <Link to={`/profile/${student.id}`}>
+                  <Link to={`/person/${participant.id}`}>
                     <div>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                        {student.name}
+                        {participant.name}
                       </h4>
-                      <p className="text-sm text-gray-600">@{student.handle}</p>
-                      <p className="text-sm text-gray-500">{student.university}</p>
+                      <p className="text-sm text-gray-600">@{participant.handle}</p>
                     </div>
                   </Link>
                 </div>
