@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { universityService } from "@/services/universityService";
-import { UniversityFullModel } from "../../../api/models";
+import { UniversityFullModel } from "../../../api/university";
 
 const UniversityDetails = () => {
   const { id } = useParams();
@@ -16,7 +16,7 @@ const UniversityDetails = () => {
   useEffect(() => {
     const fetchUniversityDetails = async () => {
       if (!id) return;
-      
+      setLoading(true);
       try {
         const university = await universityService.get(id);
         setUniversity(university);
@@ -77,7 +77,7 @@ const UniversityDetails = () => {
               <div className="space-y-3">
                 {university.students.map((student, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <Link to={`/profile/${student.id}`}>
+                    <Link to={`/person/${student.id}`}>
                       <h4 className="font-semibold text-blue-600 hover:text-blue-800">
                         {student.name}
                       </h4>
@@ -90,21 +90,21 @@ const UniversityDetails = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Contests Participated</CardTitle>
+              <CardTitle>Teams</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {university.contests.map((contest, index) => {
+                {university.teams.map((team, index) => {
                   return (
                     <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      {contest ? (
-                        <Link to={`/contest/${contest.id}`}>
+                      {team ? (
+                        <Link to={`/team/${team.id}`}>
                           <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                            {contest.name}
+                            {team.name}
                           </h4>
                         </Link>
                       ) : (
-                        <h4 className="font-semibold">{contest.name}</h4>
+                        <h4 className="font-semibold">{team.name}</h4>
                       )}
                     </div>
                   );
