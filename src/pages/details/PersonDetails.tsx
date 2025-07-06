@@ -4,9 +4,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import ContestPerformance from "@/components/ContestPerformance";
 import { personService } from "@/services/personService";
-import { PersonFullModel } from "../../../api/models";
+import { PersonFullModel } from "../../../api/person";
 
 const PersonDetails = () => {
   const { id } = useParams();
@@ -17,7 +16,7 @@ const PersonDetails = () => {
   useEffect(() => {
     const fetchPerson = async () => {
       if (!id) return;
-      
+
       setLoading(true);
       try {
         const foundPerson = await personService.get(id);
@@ -54,8 +53,8 @@ const PersonDetails = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => navigate("/search/person")}
           className="mb-6"
         >
@@ -63,84 +62,57 @@ const PersonDetails = () => {
           Back to Search
         </Button>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-3xl">{person.name}</CardTitle>
-                <p className="text-xl text-gray-600">@{person.handle}</p>
-                <p className="text-gray-500">{person.university}</p>
-              </CardHeader>
-            </Card>
-
-            {person.events && person.events.length > 0 && (
-              <Card className="mb-8">
-                <CardHeader>
-                  <CardTitle>Events Participated</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {person.events.map((event, index) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <Link to={`/event/${event.id}`}>
-                          <h4 className="font-semibold text-blue-600 hover:text-blue-800">
-                            {event.name}
-                          </h4>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-3xl">{person.name}</CardTitle>
+            <p className="text-xl text-gray-600">@{person.handle}</p>
+            {person.university && (
+              <p className="text-gray-500 mt-2">{person.university.name}</p>
             )}
+          </CardHeader>
+        </Card>
 
-            <ContestPerformance contests={person.contests} />
-          </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Teams</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {person.teams.map((team, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Link to={`/team/${team.id}`}>
+                      <h4 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
+                        {team.name}
+                      </h4>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-          <div>
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Contest History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {person.contests.map((result, index) => (
-                    <div key={index} className="border-l-4 border-blue-500 pl-4">
-                      <Link to={`/contest/${result.contest.id}`}>
-                        <h4 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
-                          {result.contest.name}
-                        </h4>
-                      </Link>
-                      <p className="text-sm text-gray-600">{result.contest.year}</p>
-                      <p className="text-sm font-medium text-blue-600">
-                        Position: {result.position}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Events Participated</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {person.events.map((event, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <Link to={`/event/${event.id}`}>
+                      <h4 className="font-semibold text-blue-600 hover:text-blue-800">
+                        {event.name}
+                      </h4>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Teams</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {person.teams.map((team, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <Link to={`/team/${team.id}`}>
-                        <h4 className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
-                          {team.name}
-                        </h4>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
+
       </div>
     </div>
   );
