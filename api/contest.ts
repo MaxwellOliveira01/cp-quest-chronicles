@@ -11,7 +11,7 @@ export interface ContestModel {
 
 export interface ContestFullModel extends ContestModel {
     local?: LocalModel;
-    problem: ProblemModel[];
+    problems: ProblemModel[];
     // List<TeamResultModel> Ranking
 }
 
