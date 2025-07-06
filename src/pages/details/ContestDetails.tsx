@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,9 @@ const ContestDetails = () => {
 
         setTeams(foundTeams);
         setContest(foundContest);
+
+        console.log("Contest fetched:", foundContest);
+
       } catch (error) {
         console.error("Error fetching contest or teams:", error);
       } finally {
@@ -108,7 +110,7 @@ const ContestDetails = () => {
           <CardHeader>
             <CardTitle className="text-3xl">{contest.name}</CardTitle>
             <p className="text-gray-600">Contest Results</p>
-            <div className="flex gap-4 mt-4">
+            <div className="flex gap-4 mt-4 flex-wrap">
               {contest.siteUrl && (
                 <Button
                   onClick={() => window.open(contest.siteUrl, '_blank')}
@@ -116,6 +118,24 @@ const ContestDetails = () => {
                 >
                   <ExternalLink className="w-4 h-4" />
                   Official Page
+                </Button>
+              )}
+              {contest.hasStatements && (
+                <Button
+                  variant="outline"
+                  onClick={async () => await contestService.downloadStatements(contest.id)}
+                  className="flex items-center gap-2"
+                >
+                  📄 Download Statements
+                </Button>
+              )}
+              {contest.hasTutorial && (
+                <Button
+                  variant="outline"
+                  onClick={async () => await contestService.downloadTutorials(contest.id)}
+                  className="flex items-center gap-2"
+                >
+                  📘 Download Tutorials
                 </Button>
               )}
             </div>

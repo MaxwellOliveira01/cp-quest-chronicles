@@ -53,6 +53,14 @@ class ContestService {
     });
     if (!response.ok) throw new Error('Failed to delete contest');
   }
+
+  async downloadStatements(contestId: string) {
+    window.open(`${apiRoute}/${contestId}/statements`, '_blank');
+  }
+
+  async downloadTutorials(contestId: string) {
+    window.open(`${apiRoute}/${contestId}/tutorial`, '_blank');
+  }
   
 }
 

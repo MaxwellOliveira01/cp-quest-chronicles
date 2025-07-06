@@ -8,6 +8,8 @@ export interface ContestModel {
     siteUrl?: string;
     startDate?: string;
     endDate?: string;
+    hasStatements: boolean;
+    hasTutorial: boolean;
 }
 
 export interface ContestFullModel extends ContestModel {

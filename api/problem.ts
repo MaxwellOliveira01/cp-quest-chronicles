@@ -1,5 +1,4 @@
 import { ContestModel } from "./contest";
-import { PersonModel } from "./person";
 
 export interface ProblemModel {
     id: string;
@@ -10,7 +9,6 @@ export interface ProblemModel {
 }
 
 export interface ProblemFullModel extends ProblemModel {
-    setter?: PersonModel;
     contest?: ContestModel;
 }
 
@@ -19,7 +17,6 @@ export interface ProblemCreateModel {
     label: string;
     order: number;
     contestId: string;
-    setterId?: string;
 }
 
 export interface ProblemUpdateModel extends ProblemCreateModel {
