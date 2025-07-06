@@ -40,6 +40,17 @@ const TeamDetails = () => {
     fetchTeam();
   }, [id]);
 
+  const getMedalIcon = (position: number) => {
+    if (position >= 1 && position <= 4) {
+      return "🥇"; // Gold
+    } else if (position >= 5 && position <= 8) {
+      return "🥈"; // Silver
+    } else if (position >= 9 && position <= 12) {
+      return "🥉"; // Bronze
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -122,7 +133,7 @@ const TeamDetails = () => {
                           </h4>
                         </Link>
                         <p className="text-sm font-medium text-blue-600">
-                          Position: {result.position}
+                          Position: {result.position} {getMedalIcon(result.position)}
                         </p>
                       </div>
                     );
@@ -136,16 +147,6 @@ const TeamDetails = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* {team.contests.length > 0 && (
-          <div className="mt-8">
-            <ContestPerformance 
-              contests={team.contests} 
-              title="Team Contest Performance" 
-            />
-          </div>
-        )} */}
-
       </div>
     </div>
   );
