@@ -3,25 +3,35 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, ExternalLink, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
 import { contestService } from "@/services/contestService";
-import { ContestFullModel } from "../../../api/models";
+import { ContestFullModel } from "../../../api/contest";
+import { TeamModel } from "../../../api/team";
+import { teamService } from "../../services/teamService";
 
 const ContestDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [contest, setContest] = useState<ContestFullModel | null>(null);
+  const [teams, setTeams] = useState<TeamModel[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchContest = async () => {
       if (!id) return;
       
+      setLoading(true);
       try {
-        const foundContest = await contestService.get(id);
+
+        const [foundContest, foundTeams] = await Promise.all([
+          contestService.get(id),
+          teamService.list()
+        ]);
+
+        setTeams(foundTeams);
         setContest(foundContest);
       } catch (error) {
-        console.error("Error fetching contest:", error);
+        console.error("Error fetching contest or teams:", error);
       } finally {
         setLoading(false);
       }
@@ -49,8 +59,38 @@ const ContestDetails = () => {
     );
   }
 
-  // Generate consistent colors for each problem
-  const problemColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
+  const problemColors = [
+    '#ef4444', // red
+    '#f97316', // orange
+    '#eab308', // yellow
+    '#22c55e', // green
+    '#06b6d4', // cyan
+    '#3b82f6', // blue
+    '#8b5cf6', // violet
+    '#ec4899', // pink
+    '#f59e0b', // amber
+    '#10b981', // emerald
+    '#6366f1', // indigo
+    '#14b8a6', // teal
+    '#a21caf', // purple
+    '#f43f5e', // rose
+    '#84cc16', // lime
+    '#e11d48', // fuchsia
+    '#0ea5e9', // sky
+    '#b91c1c', // dark red
+    '#facc15', // gold
+    '#7c3aed', // deep violet
+    '#d97706', // deep orange
+    '#059669', // deep green
+    '#2563eb', // deep blue
+    '#db2777', // deep pink
+    '#fde68a', // light yellow
+    '#f87171', // light red
+    '#a3e635', // light lime
+    '#38bdf8', // light sky
+    '#fbbf24', // light amber
+    '#c026d3', // magenta
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,31 +109,15 @@ const ContestDetails = () => {
             <CardTitle className="text-3xl">{contest.name}</CardTitle>
             <p className="text-gray-600">Contest Results</p>
             <div className="flex gap-4 mt-4">
-              <Button 
-                onClick={() => window.open(contest.officialUrl, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Official Page
-              </Button>
-              <Button 
-                variant={contest.problemsUrl ? "default" : "secondary"}
-                disabled={!contest.problemsUrl}
-                onClick={() => contest.problemsUrl && window.open(contest.problemsUrl, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Problems PDF
-              </Button>
-              <Button 
-                variant={contest.solutionsUrl ? "default" : "secondary"}
-                disabled={!contest.solutionsUrl}
-                onClick={() => contest.solutionsUrl && window.open(contest.solutionsUrl, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Solutions PDF
-              </Button>
+              {contest.siteUrl && (
+                <Button
+                  onClick={() => window.open(contest.siteUrl, '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Official Page
+                </Button>
+              )}
             </div>
           </CardHeader>
         </Card>
@@ -107,11 +131,11 @@ const ContestDetails = () => {
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Rank</th>
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Team Name</th>
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Penalty</th>
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Rank</th>
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Team Name</th>
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Penalty</th>
                     {contest.problems.map((problem, index) => (
-                      <th key={index} className="border border-gray-300 px-4 py-3 text-center font-semibold">
+                      <th key={problem.id} className="border border-gray-300 px-4 py-3 text-center font-semibold">
                         <div className="flex items-center justify-center gap-2">
                           <div 
                             className="w-4 h-4 rounded-full" 
@@ -124,37 +148,55 @@ const ContestDetails = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {contest.ranking.map((teamRanking, index) => (
+                  {contest.results.map((teamResult, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-3 font-semibold">
-                        {index + 1}
+                      
+                      <td className="border border-gray-300 px-4 py-3 font-semibold text-center">
+                        {teamResult.position}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 font-medium">
-                        {teamRanking.team.name}
+
+                      <td className="border border-gray-300 px-4 py-3 font-medium text-center">
+                        {teams.find(team => team.id === teamResult.teamId)?.name || "Unknown Team"}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3">
-                        {teamRanking.penalty}
+                      
+                      <td className="border border-gray-300 px-4 py-3 text-center">
+                        {teamResult.penalty}
                       </td>
-                      {contest.problems.map((problem, problemIndex) => (
-                        <td key={problemIndex} className="border border-gray-300 px-4 py-3 text-center">
-                          {teamRanking.submissions.find(s => s.problemId === problem.id) ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <div 
-                                className="text-2xl"
-                                style={{ color: problemColors[problemIndex % problemColors.length] }}
-                              >
-                                🎈
+                      
+                      {contest.problems.map((problem, problemIndex) => {
+                        const submission = teamResult.submissions.find(s => s.problemId === problem.id);
+                        return (
+                          <td key={problemIndex} className="border border-gray-300 px-4 py-3 text-center">
+                            {submission?.accepted ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <svg
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <ellipse
+                                    cx="12"
+                                    cy="9"
+                                    rx="6"
+                                    ry="8"
+                                    fill={problemColors[problemIndex % problemColors.length]}
+                                  />
+                                  <ellipse cx="9" cy="6" rx="2" ry="3" fill="white" opacity="0.3" />
+                                  <path d="M10 17 Q12 19 14 17 Q12 15 10 17 Z" fill="#B22222" />
+                                  <path d="M12 17 C10 20, 14 21, 12 23" stroke="#666" strokeWidth="1" fill="none" />
+                                </svg>
+                                <div className="text-xs text-gray-600">
+                                  <div>{submission.tries} tries</div>
+                                  <div>{submission.penalty} min</div>
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-600">
-                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id)?.tries} tries</div>
-                                <div>{teamRanking.submissions.find(s => s.problemId === problem.id)?.penalty} min</div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto"></div>
-                          )}
-                        </td>
-                      ))}
+                            ) : (
+                              <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto"></div>
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>

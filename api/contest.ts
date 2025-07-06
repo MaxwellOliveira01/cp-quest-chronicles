@@ -1,5 +1,6 @@
 import { LocalModel } from "./local";
 import { ProblemModel } from "./problem";
+import { TeamResultFullModel } from "./teamResult";
 
 export interface ContestModel {
     id: string;
@@ -12,7 +13,7 @@ export interface ContestModel {
 export interface ContestFullModel extends ContestModel {
     local?: LocalModel;
     problems: ProblemModel[];
-    // List<TeamResultModel> Ranking
+    results: TeamResultFullModel[];
 }
 
 export interface ContestCreateModel {
