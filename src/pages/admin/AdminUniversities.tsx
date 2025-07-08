@@ -26,7 +26,7 @@ const AdminUniversities = () => {
       setLoading(true);
       try {
         const [universitiesData, localsData] = await Promise.all([
-          universityService.getAll(),
+          universityService.list(),
           localService.getAll()
         ]);
         setUniversities(universitiesData);
@@ -58,7 +58,7 @@ const AdminUniversities = () => {
           localId: formData.localId || undefined
         });
       }
-      const universitiesData = await universityService.getAll();
+      const universitiesData = await universityService.list();
       setUniversities(universitiesData);
       setIsFormOpen(false);
       setEditingUniversity(null);
@@ -93,7 +93,7 @@ const AdminUniversities = () => {
       setLoading(true);
       try {
         await universityService.delete(id);
-        const universitiesData = await universityService.getAll();
+        const universitiesData = await universityService.list();
         setUniversities(universitiesData);
       } catch (error) {
         console.error("Error deleting university:", error);

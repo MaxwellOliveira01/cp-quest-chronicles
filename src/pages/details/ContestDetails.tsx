@@ -152,7 +152,7 @@ const ContestDetails = () => {
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Rank</th>
-                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Team Name</th>
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Team</th>
                     <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-center">Penalty</th>
                     {contest.problems.map((problem, index) => (
                       <th key={problem.id} className="border border-gray-300 px-4 py-3 text-center font-semibold">
@@ -161,7 +161,7 @@ const ContestDetails = () => {
                             className="w-4 h-4 rounded-full" 
                             style={{ backgroundColor: problemColors[index % problemColors.length] }}
                           ></div>
-                          Problem {problem.label}
+                          {problem.label}
                         </div>
                       </th>
                     ))}
